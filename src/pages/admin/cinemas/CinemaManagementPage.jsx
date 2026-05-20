@@ -1,5 +1,5 @@
 ﻿import DataTable from '@/components/shared/DataTable';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { mockCinemas } from '@/utils/mockData';
 
 function CinemaManagementPage() {

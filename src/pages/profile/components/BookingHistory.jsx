@@ -1,5 +1,5 @@
 ﻿import { formatDate } from '@/utils/formatDate';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 /** @param {{ bookings: Array<{ id: string, createdAt?: string, status?: string }> }} props */
 function BookingHistory({ bookings }) {

@@ -1,5 +1,5 @@
 ﻿import SearchBar from '@/components/shared/SearchBar';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 const QUICK_FILTERS = ['All', '2D', 'IMAX', 'Subbed', 'VN Dub'];
 

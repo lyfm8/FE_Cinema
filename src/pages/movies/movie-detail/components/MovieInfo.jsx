@@ -1,6 +1,6 @@
 ﻿import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 /** @param {{ movie: { title: string, genre: string, duration: string, rating: number, price: number }, onOpenTrailer: () => void }} props */

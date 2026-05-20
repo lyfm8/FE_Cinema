@@ -1,4 +1,4 @@
-﻿import useLanguage from '@/hooks/useLanguage';
+﻿import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 /** @param {{ profile: { name?: string, email?: string } }} props */
 function ProfileInfo({ profile }) {

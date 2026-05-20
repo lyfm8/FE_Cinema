@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '@/pages/auth/login/LoginForm';
 import useAuth from '@/features/auth/hooks/useAuth';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { validateLoginForm } from '@/utils/validators';
 
 function LoginPage() {

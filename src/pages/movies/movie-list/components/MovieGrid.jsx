@@ -1,7 +1,7 @@
 ﻿import MovieCard from '@/pages/movies/movie-list/components/MovieCard';
 import Spinner from '@/components/ui/Spinner';
 import Pagination from '@/components/shared/Pagination';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 /**
  * @param {{

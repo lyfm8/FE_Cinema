@@ -4,7 +4,7 @@ import ChangePasswordForm from '@/pages/profile/components/ChangePasswordForm';
 import BookingHistory from '@/pages/profile/components/BookingHistory';
 import { getProfile } from '@/features/profile/services/userService';
 import { getMyBookings } from '@/features/booking/services/bookingService';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { mockProfileBookings } from '@/utils/mockData';
 
 function ProfilePage() {

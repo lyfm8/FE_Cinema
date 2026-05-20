@@ -4,7 +4,7 @@ import MovieGrid from '@/pages/movies/movie-list/components/MovieGrid';
 import useMovies from '@/features/movies/hooks/useMovies';
 import usePagination from '@/features/movies/hooks/usePagination';
 import useDebounce from '@/features/movies/hooks/useDebounce';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 function MovieListPage() {
   const { movies, loading, error } = useMovies();

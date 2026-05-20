@@ -1,4 +1,4 @@
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 const MONTHLY_REVENUE = [
   { month: 'Jan', value: 58 },

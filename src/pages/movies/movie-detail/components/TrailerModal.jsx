@@ -1,5 +1,5 @@
 ﻿import Modal from '@/components/ui/Modal';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 /** @param {{ isOpen: boolean, onClose: () => void, title: string }} props */
 function TrailerModal({ isOpen, onClose, title }) {

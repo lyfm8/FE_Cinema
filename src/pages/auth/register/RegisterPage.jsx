@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import RegisterForm from '@/pages/auth/register/RegisterForm';
 import { register } from '@/features/auth/services/authService';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { isEmail, minLength } from '@/utils/validators';
 
 function RegisterPage() {

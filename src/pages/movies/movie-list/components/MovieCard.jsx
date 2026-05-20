@@ -1,6 +1,6 @@
 ﻿import { Link } from 'react-router-dom';
 import Badge from '@/components/ui/Badge';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 /** @param {{ movie: { id: string, title: string, genre: string, duration: string, rating: number, price: number } }} props */

@@ -2,7 +2,7 @@
 import MovieTable from '@/pages/admin/movies/components/MovieTable';
 import MovieFormModal from '@/pages/admin/movies/components/MovieFormModal';
 import Button from '@/components/ui/Button';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { mockMovies } from '@/utils/mockData';
 
 function MovieManagementPage() {

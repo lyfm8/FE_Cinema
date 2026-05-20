@@ -4,7 +4,7 @@ import PaymentForm from '@/pages/booking/payment/components/PaymentForm';
 import OrderSummary from '@/pages/booking/payment/components/OrderSummary';
 import PaymentMethodSelector from '@/pages/booking/payment/components/PaymentMethodSelector';
 import useBooking from '@/features/booking/hooks/useBooking';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { confirmPayment } from '@/features/booking/services/paymentService';
 
 function PaymentPage() {
