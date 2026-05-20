@@ -1,24 +1,10 @@
-﻿import DataTable from '@/components/shared/DataTable';
+import DataTable from '@/components/shared/DataTable';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
-import { mockCinemas } from '@/utils/mockData';
+import useCinemaManagement from '@/features/admin/cinemas/hooks/useCinemaManagement';
 
 function CinemaManagementPage() {
   const { tx } = useLanguage();
-  const columns = [
-    { key: 'name', label: tx('Cinema', 'Rạp') },
-    { key: 'city', label: tx('City', 'Thành phố') },
-    { key: 'rooms', label: tx('Rooms', 'Phòng chiếu') },
-    { key: 'occupancy', label: tx('Occupancy', 'Tỷ lệ lấp đầy') },
-    { key: 'manager', label: tx('Manager', 'Quản lý') },
-  ];
-
-  const rows = mockCinemas.map((item) => ({
-    name: item.name,
-    city: item.city,
-    rooms: item.rooms,
-    occupancy: item.occupancy,
-    manager: item.manager,
-  }));
+  const { columns, rows, summary } = useCinemaManagement(tx);
 
   return (
     <div className="space-y-5">
@@ -31,15 +17,15 @@ function CinemaManagementPage() {
       <section className="grid gap-3 sm:grid-cols-3">
         <article className="surface-card p-3">
           <p className="section-label mb-1">{tx('Active Branches', 'Chi nhánh hoạt động')}</p>
-          <p className="movie-title text-xl">{mockCinemas.length}</p>
+          <p className="movie-title text-xl">{summary.activeBranches}</p>
         </article>
         <article className="surface-card p-3">
           <p className="section-label mb-1">{tx('Total Rooms', 'Tổng số phòng')}</p>
-          <p className="movie-title text-xl">39</p>
+          <p className="movie-title text-xl">{summary.totalRooms}</p>
         </article>
         <article className="surface-card p-3">
           <p className="section-label mb-1">{tx('Average Occupancy', 'Lấp đầy trung bình')}</p>
-          <p className="movie-title text-xl">76%</p>
+          <p className="movie-title text-xl">{summary.averageOccupancy}</p>
         </article>
       </section>
 
@@ -52,4 +38,3 @@ function CinemaManagementPage() {
 }
 
 export default CinemaManagementPage;
-

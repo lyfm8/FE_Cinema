@@ -1,42 +1,21 @@
-﻿import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PaymentForm from '@/pages/booking/payment/components/PaymentForm';
 import OrderSummary from '@/pages/booking/payment/components/OrderSummary';
 import PaymentMethodSelector from '@/pages/booking/payment/components/PaymentMethodSelector';
-import useBooking from '@/features/booking/hooks/useBooking';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
-import { confirmPayment } from '@/features/booking/services/paymentService';
+import usePaymentPage from '@/features/booking/payment/hooks/usePaymentPage';
 
 function PaymentPage() {
-  const navigate = useNavigate();
   const { tx } = useLanguage();
-  const { selectedSeats } = useBooking();
-  const [method, setMethod] = useState('CARD');
-  const [customerName, setCustomerName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const totalPrice = useMemo(() => selectedSeats.length * 90000, [selectedSeats]);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      await confirmPayment({
-        method,
-        customerName,
-        seats: selectedSeats,
-      });
-
-      navigate('/booking/confirmation');
-    } catch (requestError) {
-      setError(requestError?.response?.data?.message ?? tx('Payment failed.', 'Thanh toán thất bại.'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    method,
+    customerName,
+    loading,
+    error,
+    totalPrice,
+    setMethod,
+    setCustomerName,
+    handleSubmit,
+  } = usePaymentPage(tx);
 
   return (
     <div className="page-container space-y-6">
@@ -62,6 +41,3 @@ function PaymentPage() {
 }
 
 export default PaymentPage;
-
-
-

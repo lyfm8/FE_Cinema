@@ -1,41 +1,12 @@
-﻿import { useEffect, useState } from 'react';
 import ProfileInfo from '@/pages/profile/components/ProfileInfo';
 import ChangePasswordForm from '@/pages/profile/components/ChangePasswordForm';
 import BookingHistory from '@/pages/profile/components/BookingHistory';
-import { getProfile } from '@/features/profile/services/userService';
-import { getMyBookings } from '@/features/booking/services/bookingService';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
-import { mockProfileBookings } from '@/utils/mockData';
+import useProfilePage from '@/features/profile/hooks/useProfilePage';
 
 function ProfilePage() {
   const { tx } = useLanguage();
-  const [profile, setProfile] = useState({ name: 'Guest User', email: 'guest@example.com' });
-  const [bookings, setBookings] = useState([]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadData() {
-      try {
-        const [profileResult, bookingsResult] = await Promise.all([getProfile(), getMyBookings()]);
-
-        if (mounted) {
-          setProfile(profileResult?.data ?? profileResult);
-          setBookings(bookingsResult?.data ?? bookingsResult);
-        }
-      } catch {
-        if (mounted) {
-          setBookings(mockProfileBookings);
-        }
-      }
-    }
-
-    loadData();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const { profile, bookings } = useProfilePage();
 
   return (
     <div className="page-container space-y-6">
@@ -57,6 +28,3 @@ function ProfilePage() {
 }
 
 export default ProfilePage;
-
-
-

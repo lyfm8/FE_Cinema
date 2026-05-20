@@ -1,32 +1,23 @@
-﻿import { useMemo, useState } from 'react';
 import MovieFilter from '@/pages/movies/movie-list/components/MovieFilter';
 import MovieGrid from '@/pages/movies/movie-list/components/MovieGrid';
-import useMovies from '@/features/movies/hooks/useMovies';
-import usePagination from '@/features/movies/hooks/usePagination';
-import useDebounce from '@/features/movies/hooks/useDebounce';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
+import useMovieListPage from '@/features/movies/movie-list/hooks/useMovieListPage';
 
 function MovieListPage() {
-  const { movies, loading, error } = useMovies();
   const { tx } = useLanguage();
-  const [keyword, setKeyword] = useState('');
-  const debouncedKeyword = useDebounce(keyword, 250);
-
-  const filteredMovies = useMemo(() => {
-    const q = debouncedKeyword.trim().toLowerCase();
-
-    if (!q) {
-      return movies;
-    }
-
-    return movies.filter((movie) => movie.title?.toLowerCase().includes(q));
-  }, [movies, debouncedKeyword]);
-
-  const { page, totalPages, paginatedItems, nextPage, prevPage } = usePagination(filteredMovies, 8);
-  const highlightedGenres = useMemo(() => {
-    const values = movies.map((movie) => movie.genre).filter(Boolean);
-    return Array.from(new Set(values)).slice(0, 6);
-  }, [movies]);
+  const {
+    loading,
+    error,
+    keyword,
+    filteredMovies,
+    highlightedGenres,
+    page,
+    totalPages,
+    paginatedMovies,
+    setKeyword,
+    nextPage,
+    prevPage,
+  } = useMovieListPage();
 
   return (
     <div className="page-container space-y-7">
@@ -59,7 +50,7 @@ function MovieListPage() {
       {error ? <p className="text-xs text-rose">{tx(error, 'Không thể tải phim từ API. Đang hiển thị dữ liệu mẫu.')}</p> : null}
 
       <MovieGrid
-        movies={paginatedItems}
+        movies={paginatedMovies}
         loading={loading}
         page={page}
         totalPages={totalPages}
@@ -71,6 +62,3 @@ function MovieListPage() {
 }
 
 export default MovieListPage;
-
-
-

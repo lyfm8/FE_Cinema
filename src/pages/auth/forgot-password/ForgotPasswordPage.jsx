@@ -1,31 +1,18 @@
-﻿import { useState } from 'react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
-import { forgotPassword } from '@/features/auth/services/authService';
+import useForgotPasswordPage from '@/features/auth/forgot-password/hooks/useForgotPasswordPage';
 
 function ForgotPasswordPage() {
   const { tx } = useLanguage();
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true);
-    setMessage('');
-    setError('');
-
-    try {
-      await forgotPassword({ email });
-      setMessage(tx('Password reset request sent successfully.', 'Yêu cầu đặt lại mật khẩu đã được gửi.'));
-    } catch (requestError) {
-      setError(requestError?.response?.data?.message ?? tx('Request failed.', 'Gửi yêu cầu thất bại.'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    email,
+    message,
+    error,
+    loading,
+    setEmail,
+    handleSubmit,
+  } = useForgotPasswordPage(tx);
 
   return (
     <div className="page-container flex items-center justify-center py-10">
@@ -56,5 +43,3 @@ function ForgotPasswordPage() {
 }
 
 export default ForgotPasswordPage;
-
-

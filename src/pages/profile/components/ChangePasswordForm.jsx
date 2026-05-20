@@ -1,16 +1,11 @@
-﻿import { useState } from 'react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
+import useChangePasswordForm from '@/features/profile/hooks/useChangePasswordForm';
 
 function ChangePasswordForm() {
   const { tx } = useLanguage();
-  const [password, setPassword] = useState('');
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setPassword('');
-  };
+  const { password, setPassword, handleSubmit } = useChangePasswordForm();
 
   return (
     <form onSubmit={handleSubmit} className="surface-card p-4">
@@ -33,4 +28,3 @@ function ChangePasswordForm() {
 }
 
 export default ChangePasswordForm;
-
