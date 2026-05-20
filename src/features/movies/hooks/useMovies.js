@@ -1,5 +1,6 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getMovies } from '@/features/movies/services/movieService';
+import { extractMovieList, normalizeMovieItem } from '@/features/movies/utils/movieAdapter';
 import { mockMovies } from '@/utils/mockData';
 
 function useMovies(initialFilters = {}) {
@@ -17,10 +18,11 @@ function useMovies(initialFilters = {}) {
 
       try {
         const result = await getMovies(filters);
-        const records = Array.isArray(result?.data) ? result.data : result;
+        const records = extractMovieList(result);
 
         if (mounted) {
-          setMovies(Array.isArray(records) ? records : []);
+          const normalizedMovies = records.map(normalizeMovieItem).filter(Boolean);
+          setMovies(normalizedMovies);
         }
       } catch {
         if (mounted) {
@@ -54,4 +56,3 @@ function useMovies(initialFilters = {}) {
 }
 
 export default useMovies;
-

@@ -1,10 +1,12 @@
-﻿import StatCard from '@/pages/admin/dashboard/components/StatCard';
+import StatCard from '@/pages/admin/dashboard/components/StatCard';
 import RevenueChart from '@/pages/admin/dashboard/components/RevenueChart';
 import RecentBookings from '@/pages/admin/dashboard/components/RecentBookings';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
+import useDashboard from '@/features/admin/dashboard/hooks/useDashboard';
 
 function DashboardPage() {
   const { tx } = useLanguage();
+  const { statCards, monthlyRevenue, recentBookingColumns, recentBookingRows } = useDashboard(tx);
 
   return (
     <div className="space-y-6">
@@ -17,21 +19,25 @@ function DashboardPage() {
       </div>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label={tx('Revenue', 'Doanh thu')} value="1,240,000,000" />
-        <StatCard label={tx('Tickets', 'Vé bán ra')} value="13,280" />
-        <StatCard label={tx('Occupancy', 'Lấp đầy')} value="74%" />
-        <StatCard label={tx('Active movies', 'Phim đang chiếu')} value="22" />
+        {statCards.map((card) => (
+          <StatCard key={card.label} label={card.label} value={card.value} />
+        ))}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <RevenueChart />
-        <RecentBookings />
+        <RevenueChart
+          title={tx('Revenue Trend', 'Xu hướng doanh thu')}
+          data={monthlyRevenue}
+        />
+        <RecentBookings
+          title={tx('Recent Bookings', 'Đặt vé gần đây')}
+          hint={tx('Latest 5 records', '5 bản ghi mới nhất')}
+          columns={recentBookingColumns}
+          rows={recentBookingRows}
+        />
       </section>
     </div>
   );
 }
 
 export default DashboardPage;
-
-
-

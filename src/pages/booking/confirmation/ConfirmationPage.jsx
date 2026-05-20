@@ -1,11 +1,11 @@
-﻿import TicketCard from '@/pages/booking/confirmation/components/TicketCard';
+import TicketCard from '@/pages/booking/confirmation/components/TicketCard';
 import QRCode from '@/pages/booking/confirmation/components/QRCode';
-import useBooking from '@/features/booking/hooks/useBooking';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
+import useConfirmationPage from '@/features/booking/confirmation/hooks/useConfirmationPage';
 
 function ConfirmationPage() {
-  const { selectedSeats } = useBooking();
   const { tx } = useLanguage();
+  const { selectedSeats } = useConfirmationPage();
 
   return (
     <div className="page-container flex justify-center">
@@ -15,7 +15,12 @@ function ConfirmationPage() {
           {tx('Confirmation', 'Xác nhận')}
         </p>
         <h1 className="text-3xl font-medium text-ink">{tx('Booking confirmed', 'Đặt vé thanh cong')}</h1>
-        <p className="text-sm text-stone">{tx('Your e-ticket is ready. Show this screen at the cinema gate.', 'Vé điện tử đã sẵn sàng. Hãy đưa màn hình này tại cổng soát vé.')}</p>
+        <p className="text-sm text-stone">
+          {tx(
+            'Your e-ticket is ready. Show this screen at the cinema gate.',
+            'Vé điện tử đã sẵn sàng. Hãy đưa màn hình này tại cổng soát vé.',
+          )}
+        </p>
         <TicketCard seats={selectedSeats} />
         <QRCode />
       </section>
@@ -24,6 +29,3 @@ function ConfirmationPage() {
 }
 
 export default ConfirmationPage;
-
-
-

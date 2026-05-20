@@ -1,51 +1,15 @@
-﻿import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import MovieInfo from '@/pages/movies/movie-detail/components/MovieInfo';
 import ShowtimeList from '@/pages/movies/movie-detail/components/ShowtimeList';
 import TrailerModal from '@/pages/movies/movie-detail/components/TrailerModal';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
-import { getMovieById } from '@/features/movies/services/movieService';
-import { getShowtimesByMovieId } from '@/features/movies/services/showtimeService';
-import { mockMovies, mockShowtimes } from '@/utils/mockData';
+import useMovieDetailPage from '@/features/movies/movie-detail/hooks/useMovieDetailPage';
 
 function MovieDetailPage() {
   const { tx } = useLanguage();
-  const { id } = useParams();
-  const [movie, setMovie] = useState(null);
-  const [showtimes, setShowtimes] = useState([]);
-  const [openTrailer, setOpenTrailer] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadMovieDetail() {
-      try {
-        const [movieResult, showtimeResult] = await Promise.all([
-          getMovieById(id),
-          getShowtimesByMovieId(id),
-        ]);
-
-        if (mounted) {
-          setMovie(movieResult?.data ?? movieResult);
-          setShowtimes(showtimeResult?.data ?? showtimeResult);
-        }
-      } catch {
-        if (mounted) {
-          setMovie(mockMovies.find((item) => item.id === id) ?? mockMovies[0]);
-          setShowtimes(mockShowtimes);
-        }
-      }
-    }
-
-    loadMovieDetail();
-
-    return () => {
-      mounted = false;
-    };
-  }, [id]);
+  const { movie, showtimes, openTrailer, setOpenTrailer } = useMovieDetailPage();
 
   if (!movie) {
-    return <div className="page-container text-sm text-stone">{tx('Loading movie...', 'Äang táº£i phim...')}</div>;
+    return <div className="page-container text-sm text-stone">{tx('Loading movie...', 'Đang tải phim...')}</div>;
   }
 
   return (
@@ -53,7 +17,7 @@ function MovieDetailPage() {
       <div className="space-y-2">
         <p className="section-label eyebrow-row">
           <span className="kicker-dot" />
-          {tx('Movie Detail', 'Chi tiáº¿t phim')}
+          {tx('Movie Detail', 'Chi tiết phim')}
         </p>
         <h1 className="movie-title text-3xl">{movie.title}</h1>
       </div>
@@ -69,5 +33,3 @@ function MovieDetailPage() {
 }
 
 export default MovieDetailPage;
-
-

@@ -1,23 +1,18 @@
-﻿import { useEffect, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import SeatMap from '@/pages/booking/seat-selection/components/SeatMap';
 import SeatLegend from '@/pages/booking/seat-selection/components/SeatLegend';
 import BookingSummary from '@/pages/booking/seat-selection/components/BookingSummary';
-import useBooking from '@/features/booking/hooks/useBooking';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
-import { mockSeats } from '@/utils/mockData';
+import useSeatSelectionPage from '@/features/booking/seat-selection/hooks/useSeatSelectionPage';
 
 function SeatSelectionPage() {
-  const navigate = useNavigate();
   const { tx } = useLanguage();
-  const { showtimeId } = useParams();
-  const { selectedSeats, toggleSeat, setShowtime } = useBooking();
-
-  useEffect(() => {
-    setShowtime(showtimeId);
-  }, [setShowtime, showtimeId]);
-
-  const totalPrice = useMemo(() => selectedSeats.length * 90000, [selectedSeats]);
+  const {
+    seats,
+    selectedSeats,
+    totalPrice,
+    toggleSeat,
+    handleContinuePayment,
+  } = useSeatSelectionPage();
 
   return (
     <div className="page-container space-y-6">
@@ -35,14 +30,14 @@ function SeatSelectionPage() {
             {tx('SCREEN THIS WAY', 'MÀN HÌNH PHÍA NÀY')}
           </div>
 
-          <SeatMap seats={mockSeats} selectedSeats={selectedSeats} onToggleSeat={toggleSeat} />
+          <SeatMap seats={seats} selectedSeats={selectedSeats} onToggleSeat={toggleSeat} />
           <SeatLegend />
         </section>
 
         <BookingSummary
           selectedSeats={selectedSeats}
           totalPrice={totalPrice}
-          onContinue={() => navigate('/booking/payment')}
+          onContinue={handleContinuePayment}
         />
       </div>
     </div>
@@ -50,6 +45,3 @@ function SeatSelectionPage() {
 }
 
 export default SeatSelectionPage;
-
-
-
