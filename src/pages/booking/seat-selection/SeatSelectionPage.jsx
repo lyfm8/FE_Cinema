@@ -4,7 +4,7 @@ import SeatMap from '@/pages/booking/seat-selection/components/SeatMap';
 import SeatLegend from '@/pages/booking/seat-selection/components/SeatLegend';
 import BookingSummary from '@/pages/booking/seat-selection/components/BookingSummary';
 import useBooking from '@/features/booking/hooks/useBooking';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { mockSeats } from '@/utils/mockData';
 
 function SeatSelectionPage() {

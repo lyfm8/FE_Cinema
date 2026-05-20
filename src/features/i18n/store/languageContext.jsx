@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { LanguageContext } from '@/store/language/languageStore';
+import { LanguageContext } from '@/features/i18n/store/languageStore';
 import { LANGUAGE_STORAGE_KEYS, SUPPORTED_LANGUAGES } from '@/utils/constants';
 
 function getInitialLanguage() {

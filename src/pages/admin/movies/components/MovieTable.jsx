@@ -1,5 +1,5 @@
 ﻿import DataTable from '@/components/shared/DataTable';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 /** @param {{ movies: Array<{ id: string, title: string, genre: string, duration: string, price: number }> }} props */

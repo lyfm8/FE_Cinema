@@ -1,6 +1,6 @@
 ﻿import { Link, NavLink } from 'react-router-dom';
 import useAuth from '@/features/auth/hooks/useAuth';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import Button from '@/components/ui/Button';
 
 function Header() {

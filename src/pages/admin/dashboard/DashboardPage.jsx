@@ -1,7 +1,7 @@
 ﻿import StatCard from '@/pages/admin/dashboard/components/StatCard';
 import RevenueChart from '@/pages/admin/dashboard/components/RevenueChart';
 import RecentBookings from '@/pages/admin/dashboard/components/RecentBookings';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 function DashboardPage() {
   const { tx } = useLanguage();

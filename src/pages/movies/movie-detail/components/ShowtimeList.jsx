@@ -1,5 +1,5 @@
 ﻿import { Link } from 'react-router-dom';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 function groupByDay(showtimes) {
   return showtimes.reduce((accumulator, item) => {

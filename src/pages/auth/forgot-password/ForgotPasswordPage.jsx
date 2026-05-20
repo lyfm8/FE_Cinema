@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { forgotPassword } from '@/features/auth/services/authService';
 
 function ForgotPasswordPage() {

@@ -1,5 +1,5 @@
 ﻿import Input from '@/components/ui/Input';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 /** @param {{ customerName: string, onCustomerNameChange: (value: string) => void }} props */
 function PaymentForm({ customerName, onCustomerNameChange }) {

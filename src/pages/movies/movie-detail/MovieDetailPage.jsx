@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import MovieInfo from '@/pages/movies/movie-detail/components/MovieInfo';
 import ShowtimeList from '@/pages/movies/movie-detail/components/ShowtimeList';
 import TrailerModal from '@/pages/movies/movie-detail/components/TrailerModal';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { getMovieById } from '@/features/movies/services/movieService';
 import { getShowtimesByMovieId } from '@/features/movies/services/showtimeService';
 import { mockMovies, mockShowtimes } from '@/utils/mockData';

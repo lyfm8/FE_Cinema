@@ -1,5 +1,5 @@
 ﻿import MovieCard from '@/pages/movies/movie-list/components/MovieCard';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 /** @param {{ movies: Array<{id: string, title: string, genre: string, duration: string, rating: number, price: number}> }} props */
 function ComingSoonSection({ movies }) {

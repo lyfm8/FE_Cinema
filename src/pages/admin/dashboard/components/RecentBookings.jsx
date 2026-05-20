@@ -1,5 +1,5 @@
 ﻿import DataTable from '@/components/shared/DataTable';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { mockAdminBookings } from '@/utils/mockData';
 
 function RecentBookings() {

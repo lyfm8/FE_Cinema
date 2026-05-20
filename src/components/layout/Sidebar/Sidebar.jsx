@@ -1,5 +1,5 @@
 ﻿import { NavLink } from 'react-router-dom';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 const ADMIN_LINKS = [
   { to: '/admin', label: 'Dashboard', end: true },

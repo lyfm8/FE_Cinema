@@ -1,7 +1,7 @@
 ﻿import TicketCard from '@/pages/booking/confirmation/components/TicketCard';
 import QRCode from '@/pages/booking/confirmation/components/QRCode';
 import useBooking from '@/features/booking/hooks/useBooking';
-import useLanguage from '@/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 function ConfirmationPage() {
   const { selectedSeats } = useBooking();
