@@ -35,12 +35,12 @@ function HeroBanner({ onExplore }) {
             <Button onClick={onExplore}>{tx('Browse movies', 'Xem danh sách phim')}</Button>
             <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('12 cinemas online', '12 rạp đang mở')}</span>
             <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('84 showtimes today', '84 suất chiếu hôm nay')}</span>
-            <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('Avg checkout 02:00', 'Thanh toán trung binh 02:00')}</span>
+            <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('Avg checkout 02:00', 'Thanh toán trung bình 02:00')}</span>
           </div>
 
           <div className="grid gap-2 sm:grid-cols-3">
             <article className="rounded-md border-base bg-cream px-3 py-2">
-              <p className="section-label mb-1">{tx('Top Genre', 'Thể loại noi bat')}</p>
+              <p className="section-label mb-1">{tx('Top Genre', 'Thể loại nổi bật')}</p>
               <p className="text-sm text-charcoal">{tx('Action / Drama', 'Hành động / Tâm lý')}</p>
             </article>
             <article className="rounded-md border-base bg-cream px-3 py-2">
@@ -79,7 +79,7 @@ function HeroBanner({ onExplore }) {
                         ? 'Suất gia đình'
                         : program.label === 'Premium pick'
                           ? 'Suất cao cấp'
-                          : 'Giờ vang',
+                          : 'Giờ vàng',
                     )}
                   </span>
                 </div>

@@ -45,7 +45,7 @@ function MovieDetailPage() {
   }, [id]);
 
   if (!movie) {
-    return <div className="page-container text-sm text-stone">{tx('Loading movie...', 'Äang táº£i phim...')}</div>;
+    return <div className="page-container text-sm text-stone">{tx('Loading movie...', 'Đang tải phim...')}</div>;
   }
 
   return (
@@ -53,7 +53,7 @@ function MovieDetailPage() {
       <div className="space-y-2">
         <p className="section-label eyebrow-row">
           <span className="kicker-dot" />
-          {tx('Movie Detail', 'Chi tiáº¿t phim')}
+          {tx('Movie Detail', 'Chi tiết phim')}
         </p>
         <h1 className="movie-title text-3xl">{movie.title}</h1>
       </div>
