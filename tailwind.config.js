@@ -27,7 +27,7 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['Georgia', 'Times New Roman', 'serif'],
+        serif: ['Noto Serif', 'Georgia', 'Times New Roman', 'serif'],
       },
       maxWidth: {
         layout: '72rem',
