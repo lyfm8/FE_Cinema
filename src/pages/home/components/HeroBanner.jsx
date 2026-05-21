@@ -7,8 +7,14 @@ const QUICK_PROGRAMS = [
   { slot: '20:15', hall: 'Room C', label: 'Prime time' },
 ];
 
-/** @param {{ onExplore: () => void }} props */
-function HeroBanner({ onExplore }) {
+/**
+ * @param {{
+ *  onExplore: () => void,
+ *  showAdminAccess?: boolean,
+ *  onGoAdmin?: () => void
+ * }} props
+ */
+function HeroBanner({ onExplore, showAdminAccess = false, onGoAdmin = () => {} }) {
   const { tx } = useLanguage();
 
   return (
@@ -33,6 +39,11 @@ function HeroBanner({ onExplore }) {
 
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={onExplore}>{tx('Browse movies', 'Xem danh sách phim')}</Button>
+            {showAdminAccess ? (
+              <Button variant="secondary" onClick={onGoAdmin}>
+                {tx('Open Admin Dashboard', 'Vào dashboard admin')}
+              </Button>
+            ) : null}
             <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('12 cinemas online', '12 rạp đang mở')}</span>
             <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('84 showtimes today', '84 suất chiếu hôm nay')}</span>
             <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('Avg checkout 02:00', 'Thanh toán trung bình 02:00')}</span>

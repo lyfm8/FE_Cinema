@@ -31,8 +31,8 @@ function AuthProvider({ children }) {
 
     try {
       const data = await loginService(credentials);
-      const token = data?.data?.accessToken ?? '';
-      const user = data?.data?.user ?? null;
+      const token = data?.data?.accessToken ?? data?.accessToken ?? data?.token ?? '';
+      const user = data?.data?.user ?? data?.user ?? null;
 
       localStorage.setItem(AUTH_STORAGE_KEYS.TOKEN, token);
       localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(user));
