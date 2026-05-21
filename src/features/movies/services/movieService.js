@@ -7,7 +7,7 @@ const MOVIE_MULTIPART_CONFIG = {
 };
 
 export async function getMovies(params = {}) {
-  const response = await axiosInstance.get('/movies', { params });
+  const response = await axiosInstance.get('/movies/get-all-movies', { params });
   return response.data;
 }
 
@@ -17,7 +17,7 @@ export async function getMovieById(id) {
 }
 
 export async function createMovie(payload) {
-  const response = await axiosInstance.post('/movies', payload, MOVIE_MULTIPART_CONFIG);
+  const response = await axiosInstance.post('/movies/create-movie', payload, MOVIE_MULTIPART_CONFIG);
   return response.data;
 }
 

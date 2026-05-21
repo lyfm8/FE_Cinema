@@ -3,6 +3,7 @@ import { AUTH_STORAGE_KEYS } from '@/utils/constants';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },

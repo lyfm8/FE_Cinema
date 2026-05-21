@@ -48,7 +48,7 @@ function Header() {
             {isAuthenticated ? (
               <>
                 <span className="hidden rounded-full border-base bg-cream px-2.5 py-1 text-xs text-stone md:inline-flex">
-                  {user?.name ?? tx('Member', 'Thành viên')}
+                  {user?.role ?? tx('Member', 'Thành viên')}
                 </span>
                 <Button variant="ghost" onClick={signOut}>
                   {tx('Logout', 'Đăng xuất')}
