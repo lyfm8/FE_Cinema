@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
-import { getProfile } from '@/features/profile/services/userService';
+import { getProfile, updateProfile } from '@/features/profile/services/userService';
 import { getMyBookings } from '@/features/booking/services/bookingService';
 import { mockProfileBookings } from '@/utils/mockData';
 import { AUTH_STORAGE_KEYS } from '@/utils/constants';
 
 const DEFAULT_PROFILE = {
   name: 'Guest User',
+  fullName: 'Guest User',
   email: 'guest@example.com',
   phone: '',
+  gender: '',
+  dateOfBirth: '',
   role: '',
   status: '',
   loyaltyPoints: 0,
@@ -19,10 +22,15 @@ function normalizeProfile(payload) {
     return DEFAULT_PROFILE;
   }
 
+  const fullName = payload.fullName || payload.name || payload.email?.split('@')?.[0] || DEFAULT_PROFILE.fullName;
+
   return {
-    name: payload.fullName || payload.email?.split('@')?.[0] || DEFAULT_PROFILE.name,
+    name: fullName,
+    fullName,
     email: payload.email || DEFAULT_PROFILE.email,
     phone: payload.phone || '',
+    gender: payload.gender || '',
+    dateOfBirth: payload.dateOfBirth || '',
     role: payload.role || '',
     status: payload.status || '',
     loyaltyPoints: Number(payload.loyaltyPoints || 0),
@@ -54,6 +62,23 @@ function readCurrentUserFromStorage() {
   }
 }
 
+function persistCurrentUserProfile(profile) {
+  const currentUser = readCurrentUserFromStorage();
+  if (!currentUser) {
+    return;
+  }
+
+  const merged = {
+    ...currentUser,
+    name: profile.fullName,
+    fullName: profile.fullName,
+    email: profile.email,
+    phone: profile.phone,
+  };
+
+  localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(merged));
+}
+
 function useProfilePage() {
   const cachedUser = readCurrentUserFromStorage();
   const [profile, setProfile] = useState(
@@ -65,12 +90,17 @@ function useProfilePage() {
           role: cachedUser.role,
           status: cachedUser.status,
           loyaltyPoints: cachedUser.loyaltyPoints,
+          gender: cachedUser.gender,
+          dateOfBirth: cachedUser.dateOfBirth,
         })
       : DEFAULT_PROFILE,
   );
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -110,13 +140,51 @@ function useProfilePage() {
     };
   }, []);
 
+  const saveProfile = async (values) => {
+    setSaving(true);
+    setSaveMessage('');
+    setSaveError('');
+
+    const payload = {
+      fullName: values.fullName.trim(),
+      phone: values.phone.trim(),
+      gender: values.gender,
+      dateOfBirth: values.dateOfBirth || null,
+    };
+
+    try {
+      const response = await updateProfile(payload);
+      const refetch = await getProfile();
+      const updatedData = refetch?.data || response?.data || response;
+      const normalized = normalizeProfile(updatedData);
+
+      setProfile(normalized);
+      persistCurrentUserProfile(normalized);
+      setSaveMessage(response?.message || 'Profile updated successfully.');
+      return { ok: true };
+    } catch (requestError) {
+      const message =
+        requestError?.response?.data?.error?.message ||
+        requestError?.response?.data?.message ||
+        requestError?.message ||
+        'Unable to update profile.';
+      setSaveError(message);
+      return { ok: false, error: message };
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return {
     profile,
     bookings,
     loading,
     error,
+    saving,
+    saveMessage,
+    saveError,
+    saveProfile,
   };
 }
 
 export default useProfilePage;
-
