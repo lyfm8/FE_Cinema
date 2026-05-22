@@ -128,3 +128,47 @@ export const mockUsers = [
   { name: 'Vy Dang', email: 'vydang@email.com', role: 'USER', status: 'ACTIVE', joined: '2026-04-28' },
 ];
 
+export const mockCinemaBranches = [
+  {
+    id: 101,
+    name: 'CINEPLEX Riverside',
+    address: '12 Nguyen Hue, District 1, Ho Chi Minh',
+    phone: '0901234567',
+    email: 'riverside@cineplex.vn',
+  },
+  {
+    id: 102,
+    name: 'CINEPLEX Landmark',
+    address: '208 Nguyen Huu Canh, Binh Thanh, Ho Chi Minh',
+    phone: '0912345678',
+    email: 'landmark@cineplex.vn',
+  },
+  {
+    id: 103,
+    name: 'CINEPLEX Downtown',
+    address: '45 Bach Dang, Hai Chau, Da Nang',
+    phone: '0923456789',
+    email: 'downtown@cineplex.vn',
+  },
+  {
+    id: 104,
+    name: 'CINEPLEX Pearl',
+    address: '88 Tran Duy Hung, Cau Giay, Ha Noi',
+    phone: '0934567890',
+    email: 'pearl@cineplex.vn',
+  },
+  {
+    id: 105,
+    name: 'CINEPLEX Riverfront',
+    address: '25 Le Loi, Ninh Kieu, Can Tho',
+    phone: '0945678901',
+    email: 'riverfront@cineplex.vn',
+  },
+  {
+    id: 106,
+    name: 'CINEPLEX Marina',
+    address: '120 Tran Phu, Nha Trang, Khanh Hoa',
+    phone: '0956789012',
+    email: 'marina@cineplex.vn',
+  },
+];
