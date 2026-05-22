@@ -6,7 +6,7 @@ import useProfilePage from '@/features/profile/hooks/useProfilePage';
 
 function ProfilePage() {
   const { tx } = useLanguage();
-  const { profile, bookings } = useProfilePage();
+  const { profile, bookings, loading, error } = useProfilePage();
 
   return (
     <div className="page-container space-y-6">
@@ -18,10 +18,16 @@ function ProfilePage() {
         <h1 className="text-2xl font-medium text-ink">{tx('Profile', 'Hồ sơ')}</h1>
       </div>
 
+      {error ? (
+        <p className="rounded-md border-base bg-cream px-3 py-2 text-xs text-rose">
+          {tx(error, 'Không thể tải đầy đủ dữ liệu hồ sơ. Một phần dữ liệu có thể là mặc định.')}
+        </p>
+      ) : null}
+
       <div className="grid gap-6 lg:grid-cols-2">
         <ProfileInfo profile={profile} />
         <ChangePasswordForm />
-        <BookingHistory bookings={bookings} />
+        <BookingHistory bookings={bookings} loading={loading} />
       </div>
     </div>
   );

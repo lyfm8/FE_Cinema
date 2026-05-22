@@ -6,7 +6,7 @@ export async function createBooking(payload) {
 }
 
 export async function getMyBookings() {
-  const response = await axiosInstance.get('/bookings/me');
+  const response = await axiosInstance.get('/bookings/my-bookings');
   return response.data;
 }
 

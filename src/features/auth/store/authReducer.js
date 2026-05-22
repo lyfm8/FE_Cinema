@@ -1,6 +1,7 @@
 ﻿import { AUTH_ACTION_TYPES } from '@/features/auth/store/authActions';
 
 export const initialAuthState = {
+  initialized: false,
   loading: false,
   isAuthenticated: false,
   user: null,
@@ -20,6 +21,7 @@ function authReducer(state, action) {
     case AUTH_ACTION_TYPES.LOGIN_SUCCESS:
       return {
         ...state,
+        initialized: true,
         loading: false,
         isAuthenticated: true,
         user: action.payload.user,
@@ -30,6 +32,7 @@ function authReducer(state, action) {
     case AUTH_ACTION_TYPES.LOGIN_ERROR:
       return {
         ...state,
+        initialized: true,
         loading: false,
         error: action.payload,
       };
@@ -37,6 +40,7 @@ function authReducer(state, action) {
     case AUTH_ACTION_TYPES.HYDRATE:
       return {
         ...state,
+        initialized: true,
         isAuthenticated: Boolean(action.payload?.token),
         user: action.payload?.user ?? null,
         token: action.payload?.token ?? null,
@@ -45,6 +49,7 @@ function authReducer(state, action) {
     case AUTH_ACTION_TYPES.LOGOUT:
       return {
         ...initialAuthState,
+        initialized: true,
       };
 
     default:

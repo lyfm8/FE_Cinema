@@ -17,11 +17,20 @@ function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem(AUTH_STORAGE_KEYS.TOKEN);
     const userRaw = localStorage.getItem(AUTH_STORAGE_KEYS.USER);
+    let user = null;
+
+    if (userRaw) {
+      try {
+        user = JSON.parse(userRaw);
+      } catch {
+        localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
+      }
+    }
 
     dispatch(
       hydrateAuth({
         token,
-        user: userRaw ? JSON.parse(userRaw) : null,
+        user,
       }),
     );
   }, []);
@@ -34,6 +43,10 @@ function AuthProvider({ children }) {
       const token = data?.data?.accessToken ?? data?.accessToken ?? data?.token ?? '';
       const user = data?.data?.user ?? data?.user ?? null;
 
+      if (!token) {
+        throw new Error('Missing access token in login response.');
+      }
+
       localStorage.setItem(AUTH_STORAGE_KEYS.TOKEN, token);
       localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(user));
 
@@ -41,7 +54,7 @@ function AuthProvider({ children }) {
 
       return { ok: true, data };
     } catch (error) {
-      const message = error?.response?.data?.message ?? 'Login failed.';
+      const message = error?.response?.data?.error?.message ?? error?.response?.data?.message ?? error?.message ?? 'Login failed.';
       dispatch(loginError(message));
       return { ok: false, error: message };
     }

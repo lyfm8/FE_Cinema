@@ -1,13 +1,13 @@
 import axiosInstance from '@/services/axiosInstance';
 
 export async function getProfile() {
-  const response = await axiosInstance.get('/users/me');
+  const response = await axiosInstance.get('/users/profile');
   return response.data;
 }
 
 export async function updateProfile(payload) {
-  const response = await axiosInstance.patch('/users/me', payload);
-  return response.data;
+  void payload;
+  throw new Error('Update profile API is not available in backend yet.');
 }
 
 export default {
