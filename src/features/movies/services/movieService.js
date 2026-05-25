@@ -12,7 +12,7 @@ export async function getMovies(params = {}) {
 }
 
 export async function getMovieById(id) {
-  const response = await axiosInstance.get(`/movies/${id}`);
+  const response = await axiosInstance.get(`/movies/get-movie/${id}`);
   return response.data;
 }
 
@@ -22,12 +22,12 @@ export async function createMovie(payload) {
 }
 
 export async function updateMovie(id, payload) {
-  const response = await axiosInstance.patch(`/movies/${id}`, payload, MOVIE_MULTIPART_CONFIG);
+  const response = await axiosInstance.put(`/movies/update-movie/${id}`, payload, MOVIE_MULTIPART_CONFIG);
   return response.data;
 }
 
 export async function deleteMovie(id) {
-  const response = await axiosInstance.delete(`/movies/${id}`);
+  const response = await axiosInstance.delete(`/movies/delete-movie/${id}`);
   return response.data;
 }
 
