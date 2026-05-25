@@ -6,7 +6,7 @@ import useProfilePage from '@/features/profile/hooks/useProfilePage';
 
 function ProfilePage() {
   const { tx } = useLanguage();
-  const { profile, bookings, loading, error } = useProfilePage();
+  const { profile, bookings, loading, error, saving, saveMessage, saveError, saveProfile } = useProfilePage();
 
   return (
     <div className="page-container space-y-6">
@@ -25,7 +25,13 @@ function ProfilePage() {
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ProfileInfo profile={profile} />
+        <ProfileInfo
+          profile={profile}
+          saving={saving}
+          saveMessage={saveMessage}
+          saveError={saveError}
+          onSave={saveProfile}
+        />
         <ChangePasswordForm />
         <BookingHistory bookings={bookings} loading={loading} />
       </div>
