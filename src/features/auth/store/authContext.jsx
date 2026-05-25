@@ -8,7 +8,10 @@ import {
   logout,
 } from '@/features/auth/store/authActions';
 import { AUTH_STORAGE_KEYS } from '@/utils/constants';
-import { login as loginService } from '@/features/auth/services/authService';
+import {
+  login as loginService,
+  logout as logoutService,
+} from '@/features/auth/services/authService';
 import { AuthContext } from '@/features/auth/store/authStore';
 
 function AuthProvider({ children }) {
@@ -60,10 +63,16 @@ function AuthProvider({ children }) {
     }
   };
 
-  const signOut = () => {
-    localStorage.removeItem(AUTH_STORAGE_KEYS.TOKEN);
-    localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
-    dispatch(logout());
+  const signOut = async () => {
+    try {
+      await logoutService();
+    } catch {
+      // Local sign-out should still succeed even if the API call fails.
+    } finally {
+      localStorage.removeItem(AUTH_STORAGE_KEYS.TOKEN);
+      localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
+      dispatch(logout());
+    }
   };
 
   const value = useMemo(

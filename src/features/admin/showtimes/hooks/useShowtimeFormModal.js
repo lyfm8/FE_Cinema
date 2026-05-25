@@ -4,7 +4,12 @@ import {
   getRoomsByCinema,
   getMovies,
 } from '@/features/admin/services/showtimeService';
-import { extractList, MOVIE_FORMAT } from '@/features/admin/showtimes/utils/showtimeAdapter';
+import {
+  extractList,
+  MOVIE_FORMAT,
+  MOVIE_FORMAT_LABEL,
+  SHOWTIME_STATUS,
+} from '@/features/admin/showtimes/utils/showtimeAdapter';
 
 const EMPTY_FORM = {
   movieId: '',
@@ -13,74 +18,23 @@ const EMPTY_FORM = {
   publicStartTime: '',
   preShowMinutes: 10,
   postMovieBufferMinutes: 15,
-  format: '2D',
+  format: MOVIE_FORMAT.FORMAT_2D,
+  status: SHOWTIME_STATUS.SCHEDULED,
 };
 
-/**
- * @param {{
- *  mode: 'create' | 'edit',
- *  showtime?: any,
- *  onClose: () => void,
- *  onSubmit: (values: any) => Promise<{ ok: boolean, error?: string }>,
- *  tx: (en: string, vi: string) => string
- * }} options
- */
 function useShowtimeFormModal({ mode, showtime, onClose, onSubmit, tx }) {
   const isEditMode = mode === 'edit';
 
-  // ── Dropdown data ──
   const [movies, setMovies] = useState([]);
   const [cinemas, setCinemas] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [roomsLoading, setRoomsLoading] = useState(false);
 
-  // ── Form state ──
   const [values, setValues] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Load movies & cinemas on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const [movieRes, cinemaRes] = await Promise.all([getMovies(), getCinemas()]);
-        setMovies(extractList(movieRes));
-        setCinemas(extractList(cinemaRes));
-      } catch {
-        // Keep empty lists on failure
-      }
-    })();
-  }, []);
-
-  // Populate form for edit mode
-  useEffect(() => {
-    if (isEditMode && showtime) {
-      const cinemaId = showtime.room?.cinemaId ?? showtime.cinemaId ?? '';
-      setValues({
-        movieId: String(showtime.movieId ?? ''),
-        roomId: String(showtime.roomId ?? ''),
-        cinemaId: String(cinemaId),
-        publicStartTime: showtime.publicStartTime
-          ? new Date(showtime.publicStartTime).toISOString().slice(0, 16)
-          : '',
-        preShowMinutes: showtime.preShowMinutes ?? 10,
-        postMovieBufferMinutes: showtime.postMovieBufferMinutes ?? 15,
-        format: showtime.format ?? '2D',
-      });
-
-      // Pre-load rooms for the selected cinema
-      if (cinemaId) {
-        loadRooms(cinemaId);
-      }
-    } else {
-      setValues(EMPTY_FORM);
-    }
-    setErrors({});
-    setSubmitError('');
-  }, [isEditMode, showtime]);
-
-  // Load rooms when cinema changes
   const loadRooms = useCallback(async (cinemaId) => {
     if (!cinemaId) {
       setRooms([]);
@@ -97,29 +51,68 @@ function useShowtimeFormModal({ mode, showtime, onClose, onSubmit, tx }) {
     }
   }, []);
 
-  // ── Field change handler ──
+  useEffect(() => {
+    (async () => {
+      try {
+        const [movieRes, cinemaRes] = await Promise.all([
+          getMovies({ pageSize: 100 }),
+          getCinemas({ pageSize: 100 }),
+        ]);
+        setMovies(extractList(movieRes));
+        setCinemas(extractList(cinemaRes));
+      } catch {
+        setMovies([]);
+        setCinemas([]);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (isEditMode && showtime) {
+      const cinemaId = showtime.room?.cinemaId ?? showtime.cinemaId ?? '';
+      setValues({
+        movieId: String(showtime.movieId ?? showtime.movie?.id ?? ''),
+        roomId: String(showtime.roomId ?? showtime.room?.id ?? ''),
+        cinemaId: String(cinemaId),
+        publicStartTime: showtime.publicStartTime
+          ? new Date(showtime.publicStartTime).toISOString().slice(0, 16)
+          : '',
+        preShowMinutes: showtime.preShowMinutes ?? 10,
+        postMovieBufferMinutes: showtime.postMovieBufferMinutes ?? 15,
+        format: showtime.format ?? MOVIE_FORMAT.FORMAT_2D,
+        status: showtime.status ?? SHOWTIME_STATUS.SCHEDULED,
+      });
+
+      if (cinemaId) {
+        loadRooms(cinemaId);
+      }
+    } else {
+      setValues(EMPTY_FORM);
+      setRooms([]);
+    }
+
+    setErrors({});
+    setSubmitError('');
+  }, [isEditMode, showtime, loadRooms]);
+
   const handleValueChange = useCallback(
     (field) => (event) => {
       const val = event.target.value;
+
       setValues((prev) => {
         const next = { ...prev, [field]: val };
-
-        // If cinema changes, reset room and load new rooms
         if (field === 'cinemaId') {
           next.roomId = '';
           loadRooms(val);
         }
-
         return next;
       });
 
-      // Clear field error
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     },
     [loadRooms],
   );
 
-  // ── Validation ──
   const validate = useCallback(() => {
     const errs = {};
     if (!values.movieId) errs.movieId = tx('Required', 'Bắt buộc');
@@ -127,10 +120,10 @@ function useShowtimeFormModal({ mode, showtime, onClose, onSubmit, tx }) {
     if (!values.roomId) errs.roomId = tx('Required', 'Bắt buộc');
     if (!values.publicStartTime) errs.publicStartTime = tx('Required', 'Bắt buộc');
     if (!values.format) errs.format = tx('Required', 'Bắt buộc');
+    if (!values.status) errs.status = tx('Required', 'Bắt buộc');
     return errs;
   }, [values, tx]);
 
-  // ── Submit ──
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -150,6 +143,7 @@ function useShowtimeFormModal({ mode, showtime, onClose, onSubmit, tx }) {
         preShowMinutes: Number(values.preShowMinutes),
         postMovieBufferMinutes: Number(values.postMovieBufferMinutes),
         format: values.format,
+        status: values.status,
       };
 
       const result = await onSubmit(payload);
@@ -168,7 +162,22 @@ function useShowtimeFormModal({ mode, showtime, onClose, onSubmit, tx }) {
     ? tx('Edit Showtime', 'Sửa lịch chiếu')
     : tx('Create Showtime', 'Tạo lịch chiếu');
 
-  const formatOptions = Object.values(MOVIE_FORMAT);
+  const formatOptions = Object.values(MOVIE_FORMAT).map((value) => ({
+    value,
+    label: MOVIE_FORMAT_LABEL[value] ?? value,
+  }));
+
+  const statusOptions = Object.values(SHOWTIME_STATUS).map((value) => ({
+    value,
+    label:
+      value === SHOWTIME_STATUS.SCHEDULED
+        ? tx('Scheduled', 'Đã lên lịch')
+        : value === SHOWTIME_STATUS.ACTIVE
+          ? tx('Active', 'Đang chiếu')
+          : value === SHOWTIME_STATUS.COMPLETED
+            ? tx('Completed', 'Hoàn tất')
+            : tx('Cancelled', 'Đã hủy'),
+  }));
 
   return {
     values,
@@ -182,6 +191,7 @@ function useShowtimeFormModal({ mode, showtime, onClose, onSubmit, tx }) {
     rooms,
     roomsLoading,
     formatOptions,
+    statusOptions,
     handleValueChange,
     handleSubmit,
   };
