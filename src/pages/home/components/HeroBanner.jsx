@@ -1,25 +1,35 @@
-﻿import Button from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
-
-const QUICK_PROGRAMS = [
-  { slot: '09:30', hall: 'Room A', label: 'Family hour' },
-  { slot: '14:20', hall: 'VIP 1', label: 'Premium pick' },
-  { slot: '20:15', hall: 'Room C', label: 'Prime time' },
-];
 
 /**
  * @param {{
  *  onExplore: () => void,
  *  showAdminAccess?: boolean,
- *  onGoAdmin?: () => void
+ *  onGoAdmin?: () => void,
+ *  stats?: { totalCinemas: number, todayShowtimes: number, totalNowShowing: number, totalComingSoon: number },
+ *  upcomingShowtimes?: Array<{ id: number, publicStartTime: string, format: string, movie: { title: string }, room: { name: string, cinema: { name: string } } }>,
+ *  audiencePick?: { id: number, title: string, genre: string, durationMinutes: number } | null,
  * }} props
  */
-function HeroBanner({ onExplore, showAdminAccess = false, onGoAdmin = () => {} }) {
+function HeroBanner({
+  onExplore,
+  showAdminAccess = false,
+  onGoAdmin = () => {},
+  stats = {},
+  upcomingShowtimes = [],
+  audiencePick = null,
+}) {
   const { tx } = useLanguage();
+
+  const formatTime = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <section className="surface-card overflow-hidden">
       <div className="grid gap-0 lg:grid-cols-[1.3fr_1fr]">
+        {/* ── Left panel ── */}
         <div className="space-y-5 border-base border-b p-6 md:p-8 lg:border-b-0 lg:border-r">
           <p className="section-label eyebrow-row">
             <span className="kicker-dot" />
@@ -27,13 +37,16 @@ function HeroBanner({ onExplore, showAdminAccess = false, onGoAdmin = () => {} }
           </p>
 
           <h1 className="movie-title max-w-xl text-3xl leading-tight md:text-[2.05rem]">
-            {tx('Minimal design, maximum focus on what to watch next', 'Thiết kế tối giản, tập trung tối đa vào phim bạn sắp xem')}
+            {tx(
+              'Discover movies, compare showtimes, and book seats — all in one place',
+              'Khám phá phim, so sánh suất chiếu, và đặt vé — tất cả tại một nơi',
+            )}
           </h1>
 
           <p className="max-w-xl text-sm text-stone md:text-[15px]">
             {tx(
-              'A faster way to discover films, compare showtimes, and reserve your seats without visual noise or crowded steps.',
-              'Cách nhanh hơn để khám phá phim, so sánh suất chiếu và giữ ghế mà không bị rối mắt bởi giao diện.',
+              'A streamlined cinema experience: browse the latest films, find perfect showtimes, and reserve your seats in minutes.',
+              'Trải nghiệm rạp chiếu mượt mà: duyệt phim mới nhất, tìm suất chiếu phù hợp, và giữ ghế chỉ trong vài phút.',
             )}
           </p>
 
@@ -44,66 +57,97 @@ function HeroBanner({ onExplore, showAdminAccess = false, onGoAdmin = () => {} }
                 {tx('Open Admin Dashboard', 'Vào dashboard admin')}
               </Button>
             ) : null}
-            <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('12 cinemas online', '12 rạp đang mở')}</span>
-            <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('84 showtimes today', '84 suất chiếu hôm nay')}</span>
-            <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">{tx('Avg checkout 02:00', 'Thanh toán trung bình 02:00')}</span>
+            <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">
+              {stats.totalCinemas || 0} {tx('cinemas online', 'rạp đang mở')}
+            </span>
+            <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">
+              {stats.todayShowtimes || 0} {tx('showtimes today', 'suất chiếu hôm nay')}
+            </span>
           </div>
 
           <div className="grid gap-2 sm:grid-cols-3">
             <article className="rounded-md border-base bg-cream px-3 py-2">
-              <p className="section-label mb-1">{tx('Top Genre', 'Thể loại nổi bật')}</p>
-              <p className="text-sm text-charcoal">{tx('Action / Drama', 'Hành động / Tâm lý')}</p>
+              <p className="section-label mb-1">{tx('Now Showing', 'Đang chiếu')}</p>
+              <p className="text-sm text-charcoal">
+                {stats.totalNowShowing || 0} {tx('movies', 'phim')}
+              </p>
             </article>
             <article className="rounded-md border-base bg-cream px-3 py-2">
-              <p className="section-label mb-1">{tx('Peak Hour', 'Khung giờ cao điểm')}</p>
-              <p className="text-sm text-charcoal">19:00 - 21:00</p>
+              <p className="section-label mb-1">{tx('Coming Soon', 'Sắp chiếu')}</p>
+              <p className="text-sm text-charcoal">
+                {stats.totalComingSoon || 0} {tx('movies', 'phim')}
+              </p>
             </article>
             <article className="rounded-md border-base bg-cream px-3 py-2">
-              <p className="section-label mb-1">{tx('VIP Rooms', 'Phòng VIP')}</p>
-              <p className="text-sm text-charcoal">{tx('5 active rooms', '5 phòng đang hoạt động')}</p>
+              <p className="section-label mb-1">{tx("Today's Schedule", 'Lịch chiếu hôm nay')}</p>
+              <p className="text-sm text-charcoal">
+                {stats.todayShowtimes || 0} {tx('sessions', 'suất')}
+              </p>
             </article>
           </div>
         </div>
 
+        {/* ── Right panel ── */}
         <div className="space-y-3 bg-cream p-5 md:p-6">
-          <article className="surface-card flex items-center justify-between p-3">
-            <div>
-              <p className="section-label mb-1">{tx('Audience Pick', 'Lựa chọn khán giả')}</p>
-              <p className="movie-title text-lg">The Silent Frame</p>
-            </div>
-            <span className="rounded-full border-base bg-gold px-2.5 py-1 text-xs text-charcoal">8.9 / 10</span>
-          </article>
+          {/* Audience Pick */}
+          {audiencePick && (
+            <article className="surface-card flex items-center justify-between p-3">
+              <div>
+                <p className="section-label mb-1">{tx('Audience Pick', 'Lựa chọn khán giả')}</p>
+                <p className="movie-title text-lg">{audiencePick.title}</p>
+              </div>
+              <span className="rounded-full border-base bg-gold px-2.5 py-1 text-xs text-charcoal">
+                {audiencePick.genre || '—'}
+              </span>
+            </article>
+          )}
 
+          {/* Upcoming showtimes today */}
           <article className="surface-card p-3">
-            <p className="section-label mb-2">{tx('Today Program', 'Lịch chiếu hôm nay')}</p>
+            <p className="section-label mb-2">{tx('Upcoming Today', 'Sắp chiếu hôm nay')}</p>
             <div className="space-y-2">
-              {QUICK_PROGRAMS.map((program) => (
-                <div key={program.slot} className="flex items-center justify-between rounded-md border-base bg-paper px-3 py-2">
-                  <div>
-                    <p className="movie-title text-base">{program.slot}</p>
-                    <p className="text-xs text-stone">{program.hall}</p>
+              {upcomingShowtimes.length > 0 ? (
+                upcomingShowtimes.map((showtime) => (
+                  <div
+                    key={showtime.id}
+                    className="flex items-center justify-between rounded-md border-base bg-paper px-3 py-2"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="movie-title truncate text-base">
+                        {formatTime(showtime.publicStartTime)}
+                      </p>
+                      <p className="truncate text-xs text-stone">
+                        {showtime.room?.name || '—'} • {showtime.room?.cinema?.name || '—'}
+                      </p>
+                    </div>
+                    <div className="ml-3 text-right">
+                      <p className="truncate text-xs font-medium text-charcoal">
+                        {showtime.movie?.title || '—'}
+                      </p>
+                      <p className="text-[10px] text-stone">{showtime.format}</p>
+                    </div>
                   </div>
-                  <span className="text-xs text-stone">
-                    {tx(
-                      program.label,
-                      program.label === 'Family hour'
-                        ? 'Suất gia đình'
-                        : program.label === 'Premium pick'
-                          ? 'Suất cao cấp'
-                          : 'Giờ vàng',
-                    )}
-                  </span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="rounded-md border-base bg-paper px-3 py-3 text-center text-xs text-stone">
+                  {tx('No upcoming showtimes today', 'Không có suất chiếu sắp tới hôm nay')}
+                </p>
+              )}
             </div>
           </article>
 
+          {/* Quick info */}
           <article className="surface-card flex items-center justify-between p-3">
             <div>
-              <p className="section-label mb-1">{tx('Fast Checkout', 'Thanh toán nhanh')}</p>
-              <p className="text-sm text-charcoal">{tx('Seat to payment under two minutes', 'Từ chọn ghế đến thanh toán dưới hai phút')}</p>
+              <p className="section-label mb-1">{tx('Fast Booking', 'Đặt vé nhanh')}</p>
+              <p className="text-sm text-charcoal">
+                {tx(
+                  'Browse, select seats, and pay — all in minutes',
+                  'Duyệt phim, chọn ghế, thanh toán — chỉ vài phút',
+                )}
+              </p>
             </div>
-            <p className="movie-title text-2xl">02:00</p>
+            <p className="movie-title text-2xl">⚡</p>
           </article>
         </div>
       </div>
@@ -112,4 +156,3 @@ function HeroBanner({ onExplore, showAdminAccess = false, onGoAdmin = () => {} }
 }
 
 export default HeroBanner;
-
