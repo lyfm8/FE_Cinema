@@ -5,6 +5,7 @@ const ADMIN_LINKS = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/movies', label: 'Movies' },
   { to: '/admin/cinemas', label: 'Cinemas' },
+  { to: '/admin/rooms', label: 'Rooms' },
   { to: '/admin/showtimes', label: 'Showtimes' },
   { to: '/admin/bookings', label: 'Bookings' },
   { to: '/admin/users', label: 'Users' },
@@ -38,11 +39,13 @@ function Sidebar() {
                   ? 'Phim'
                   : link.label === 'Cinemas'
                     ? 'Rạp'
-                    : link.label === 'Showtimes'
-                      ? 'Lịch chiếu'
-                      : link.label === 'Bookings'
-                        ? 'Đặt vé'
-                        : 'Người dùng',
+                    : link.label === 'Rooms'
+                      ? 'Phòng'
+                      : link.label === 'Showtimes'
+                        ? 'Lịch chiếu'
+                        : link.label === 'Bookings'
+                          ? 'Đặt vé'
+                          : 'Người dùng',
             )}
           </NavLink>
         ))}
