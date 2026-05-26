@@ -12,6 +12,7 @@ export const ROOM_STATUS = {
 
 export const ROOM_TYPE = {
   STANDARD: 'STANDARD',
+  COUPLE: 'COUPLE',
   VIP: 'VIP',
   IMAX: 'IMAX',
 };
