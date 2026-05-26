@@ -30,10 +30,8 @@ export async function getRoomsByCinema(cinemaId) {
   return response.data;
 }
 
-export async function getRoomById(cinemaId, roomId) {
-  const response = await axiosInstance.get(
-    `/cinemas/${cinemaId}/rooms/${roomId}`,
-  );
+export async function getRoomById(roomId) {
+  const response = await axiosInstance.get(`/cinemas/rooms/${roomId}`);
   return response.data;
 }
 
@@ -42,18 +40,13 @@ export async function createRoom(cinemaId, data) {
   return response.data;
 }
 
-export async function updateRoom(cinemaId, roomId, data) {
-  const response = await axiosInstance.put(
-    `/cinemas/${cinemaId}/rooms/${roomId}`,
-    data,
-  );
+export async function updateRoom(roomId, data) {
+  const response = await axiosInstance.put(`/cinemas/rooms/${roomId}`, data);
   return response.data;
 }
 
-export async function deleteRoom(cinemaId, roomId) {
-  const response = await axiosInstance.delete(
-    `/cinemas/${cinemaId}/rooms/${roomId}`,
-  );
+export async function deleteRoom(roomId) {
+  const response = await axiosInstance.delete(`/cinemas/rooms/${roomId}`);
   return response.data;
 }
 
