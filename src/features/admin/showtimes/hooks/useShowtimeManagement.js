@@ -1,22 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { showtimeService } from "@/features/admin/showtimes/services/showtimeService";
 import {
-  getShowtimes,
-  createShowtime,
-  updateShowtime,
-  deleteShowtime,
-  getCinemas,
-  getRoomsByCinema,
-} from "@/features/admin/services/showtimeService";
-import {
-  extractList,
-  normalizeShowtime,
-  getErrorMessage,
   SHOWTIME_STATUS,
-  buildTimelineRows,
-  getTodayDateKey,
   TIMELINE_DEFAULT_START_HOUR,
   TIMELINE_DEFAULT_END_HOUR,
-} from "@/features/admin/showtimes/utils/showtimeAdapter";
+} from "@/features/admin/showtimes/constants/showtimeConstants";
+import {
+  normalizeShowtime,
+  buildTimelineRows,
+  getTodayDateKey,
+} from "@/features/admin/showtimes/utils/showtimeUtils";
+import { getErrorMessage } from "@/core/utils/errorUtils";
 
 /**
  * @param {(en: string, vi: string) => string} tx
@@ -66,8 +60,8 @@ function useShowtimeManagement(tx) {
     setLoading(true);
     setFetchError("");
     try {
-      const result = await getShowtimes({ page: 1, pageSize: 1000 });
-      const list = extractList(result)
+      const result = await showtimeService.getShowtimes({ page: 1, pageSize: 1000 });
+      const list = (result.data ?? [])
         .map(normalizeShowtime)
         .filter((s) => s && !Number.isNaN(s.id));
       setShowtimes(list);
@@ -81,8 +75,8 @@ function useShowtimeManagement(tx) {
 
   const loadCinemasForTimeline = useCallback(async () => {
     try {
-      const result = await getCinemas({ page: 1, pageSize: 100 });
-      const list = extractList(result);
+      const result = await showtimeService.getCinemas({ page: 1, pageSize: 100 });
+      const list = result.data ?? [];
       setCinemas(list);
 
       setSelectedCinemaId((current) => {
@@ -118,8 +112,8 @@ function useShowtimeManagement(tx) {
 
     (async () => {
       try {
-        const result = await getRoomsByCinema(selectedCinemaId);
-        const list = extractList(result);
+        const result = await showtimeService.getRoomsByCinema(selectedCinemaId);
+        const list = result.data ?? [];
 
         if (cancelled) return;
         setRooms(list);
@@ -166,7 +160,7 @@ function useShowtimeManagement(tx) {
   const handleSubmitShowtime = async (values) => {
     try {
       if (formMode === "edit" && editingShowtime) {
-        await updateShowtime(editingShowtime.id, values);
+        await showtimeService.updateShowtime(editingShowtime.id, values);
         showToast(
           tx(
             "Showtime updated successfully.",
@@ -175,7 +169,7 @@ function useShowtimeManagement(tx) {
           "success",
         );
       } else {
-        await createShowtime(values);
+        await showtimeService.createShowtime(values);
         showToast(
           tx("Showtime created successfully.", "Tạo lịch chiếu thành công."),
           "success",
@@ -203,7 +197,7 @@ function useShowtimeManagement(tx) {
     if (!deleteTarget) return;
     setDeletingId(deleteTarget.id);
     try {
-      await deleteShowtime(deleteTarget.id);
+      await showtimeService.deleteShowtime(deleteTarget.id);
       showToast(
         tx("Showtime deleted successfully.", "Xóa lịch chiếu thành công."),
         "success",

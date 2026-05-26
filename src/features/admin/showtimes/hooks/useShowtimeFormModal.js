@@ -1,15 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { showtimeService } from '@/features/admin/showtimes/services/showtimeService';
 import {
-  getCinemas,
-  getRoomsByCinema,
-  getMovies,
-} from '@/features/admin/services/showtimeService';
-import {
-  extractList,
   MOVIE_FORMAT,
   MOVIE_FORMAT_LABEL,
   SHOWTIME_STATUS,
-} from '@/features/admin/showtimes/utils/showtimeAdapter';
+} from '@/features/admin/showtimes/constants/showtimeConstants';
 
 const EMPTY_FORM = {
   movieId: '',
@@ -42,8 +37,8 @@ function useShowtimeFormModal({ mode, showtime, onClose, onSubmit, tx }) {
     }
     setRoomsLoading(true);
     try {
-      const res = await getRoomsByCinema(cinemaId);
-      setRooms(extractList(res));
+      const res = await showtimeService.getRoomsByCinema(cinemaId);
+      setRooms(res.data ?? []);
     } catch {
       setRooms([]);
     } finally {
@@ -55,11 +50,11 @@ function useShowtimeFormModal({ mode, showtime, onClose, onSubmit, tx }) {
     (async () => {
       try {
         const [movieRes, cinemaRes] = await Promise.all([
-          getMovies({ pageSize: 100 }),
-          getCinemas({ pageSize: 100 }),
+          showtimeService.getMovies({ pageSize: 100 }),
+          showtimeService.getCinemas({ pageSize: 100 }),
         ]);
-        setMovies(extractList(movieRes));
-        setCinemas(extractList(cinemaRes));
+        setMovies(movieRes.data ?? []);
+        setCinemas(cinemaRes.data ?? []);
       } catch {
         setMovies([]);
         setCinemas([]);
@@ -75,7 +70,11 @@ function useShowtimeFormModal({ mode, showtime, onClose, onSubmit, tx }) {
         roomId: String(showtime.roomId ?? showtime.room?.id ?? ''),
         cinemaId: String(cinemaId),
         publicStartTime: showtime.publicStartTime
-          ? new Date(showtime.publicStartTime).toISOString().slice(0, 16)
+          ? (() => {
+              const d = new Date(showtime.publicStartTime);
+              const pad = (n) => String(n).padStart(2, '0');
+              return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            })()
           : '',
         preShowMinutes: showtime.preShowMinutes ?? 10,
         postMovieBufferMinutes: showtime.postMovieBufferMinutes ?? 15,

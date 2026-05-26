@@ -1,0 +1,17 @@
+export const CINEMA_STATUS = {
+  ACTIVE: 'ACTIVE',
+  MAINTENANCE: 'MAINTENANCE',
+  INACTIVE: 'INACTIVE',
+};
+
+export const ROOM_STATUS = {
+  ACTIVE: 'ACTIVE',
+  MAINTENANCE: 'MAINTENANCE',
+  INACTIVE: 'INACTIVE',
+};
+
+export const ROOM_TYPE = {
+  STANDARD: 'STANDARD',
+  VIP: 'VIP',
+  IMAX: 'IMAX',
+};

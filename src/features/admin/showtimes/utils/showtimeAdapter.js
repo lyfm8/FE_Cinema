@@ -52,9 +52,16 @@ export function getMovieFormatLabel(format) {
 }
 
 export function getErrorMessage(error, fallbackMessage) {
+  const dataError = error?.response?.data?.error;
+  // Backend trả { error: { code, message } } hoặc { error: "string" }
+  const errorMsg =
+    typeof dataError === 'object' && dataError !== null
+      ? dataError.message
+      : dataError;
+
   return (
     error?.response?.data?.message ||
-    error?.response?.data?.error ||
+    errorMsg ||
     error?.message ||
     fallbackMessage
   );

@@ -1,8 +1,8 @@
+import { SHOWTIME_STATUS } from "@/features/admin/showtimes/constants/showtimeConstants";
 import {
   buildTimelineHourMarks,
   getMovieFormatLabel,
-  SHOWTIME_STATUS,
-} from "@/features/admin/showtimes/utils/showtimeAdapter";
+} from "@/features/admin/showtimes/utils/showtimeUtils";
 
 const STATUS_TONE_MAP = {
   [SHOWTIME_STATUS.SCHEDULED]: "border-gold bg-gold/20 text-charcoal",

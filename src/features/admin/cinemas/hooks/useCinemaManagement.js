@@ -1,23 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  getCinemas,
-  createCinema,
-  updateCinema,
-  deleteCinema,
-  getRoomsByCinema,
-  createRoom,
-  updateRoom,
-  deleteRoom,
-} from "@/features/admin/services/cinemaService";
+import { cinemaService } from "@/features/admin/cinemas/services/cinemaService";
 import {
   CINEMA_STATUS,
   ROOM_STATUS,
   ROOM_TYPE,
-  extractList,
-  normalizeCinema,
-  normalizeRoom,
-  getErrorMessage,
-} from "@/features/admin/cinemas/utils/cinemaAdapter";
+} from "@/features/admin/cinemas/constants/cinemaConstants";
+import { getErrorMessage } from "@/core/utils/errorUtils";
 
 const EMPTY_CINEMA_FORM = {
   name: "",
@@ -103,10 +91,10 @@ function useCinemaManagement(tx) {
     setLoading(true);
     setFetchError("");
     try {
-      const result = await getCinemas({ page: 1, pageSize: 100 });
-      const list = extractList(result)
-        .map(normalizeCinema)
-        .filter((item) => item && !Number.isNaN(item.id));
+      const result = await cinemaService.getCinemas({ page: 1, pageSize: 100 });
+      const list = (result.data ?? []).filter(
+        (item) => item && !Number.isNaN(Number(item.id)),
+      );
 
       setCinemas(list);
       setSelectedCinemaId((current) => {
@@ -131,10 +119,10 @@ function useCinemaManagement(tx) {
 
       setRoomsLoading(true);
       try {
-        const result = await getRoomsByCinema(cinemaId);
-        const list = extractList(result)
-          .map(normalizeRoom)
-          .filter((item) => item && !Number.isNaN(item.id));
+        const result = await cinemaService.getRoomsByCinema(cinemaId);
+        const list = (result.data ?? []).filter(
+          (item) => item && !Number.isNaN(Number(item.id)),
+        );
 
         setRooms(list);
 
@@ -236,13 +224,13 @@ function useCinemaManagement(tx) {
 
     try {
       if (cinemaFormMode === "edit" && editingCinemaId) {
-        await updateCinema(editingCinemaId, payload);
+        await cinemaService.updateCinema(editingCinemaId, payload);
         showToast(
           tx("Cinema updated successfully.", "Cập nhật rạp thành công."),
           "success",
         );
       } else {
-        await createCinema(payload);
+        await cinemaService.createCinema(payload);
         showToast(
           tx("Cinema created successfully.", "Tạo rạp thành công."),
           "success",
@@ -325,13 +313,13 @@ function useCinemaManagement(tx) {
 
     try {
       if (roomFormMode === "edit" && editingRoomId) {
-        await updateRoom(editingRoomId, payload);
+        await cinemaService.updateRoom(editingRoomId, payload);
         showToast(
           tx("Room updated successfully.", "Cập nhật phòng thành công."),
           "success",
         );
       } else {
-        await createRoom(selectedCinemaId, payload);
+        await cinemaService.createRoom(selectedCinemaId, payload);
         showToast(
           tx("Room created successfully.", "Tạo phòng thành công."),
           "success",
@@ -364,14 +352,14 @@ function useCinemaManagement(tx) {
 
     try {
       if (deleteTarget.type === "cinema") {
-        await deleteCinema(deleteTarget.item.id);
+        await cinemaService.deleteCinema(deleteTarget.item.id);
         showToast(
           tx("Cinema deleted successfully.", "Xóa rạp thành công."),
           "success",
         );
         await loadCinemas();
       } else {
-        await deleteRoom(deleteTarget.item.id);
+        await cinemaService.deleteRoom(deleteTarget.item.id);
         showToast(
           tx("Room deleted successfully.", "Xóa phòng thành công."),
           "success",

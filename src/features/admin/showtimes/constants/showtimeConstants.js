@@ -1,0 +1,21 @@
+export const SHOWTIME_STATUS = {
+  SCHEDULED: 'SCHEDULED',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+};
+
+export const MOVIE_FORMAT = {
+  FORMAT_2D: 'FORMAT_2D',
+  FORMAT_3D: 'FORMAT_3D',
+  IMAX: 'IMAX',
+};
+
+export const MOVIE_FORMAT_LABEL = {
+  FORMAT_2D: '2D',
+  FORMAT_3D: '3D',
+  IMAX: 'IMAX',
+};
+
+export const TIMELINE_DEFAULT_START_HOUR = 8;
+export const TIMELINE_DEFAULT_END_HOUR = 24;
