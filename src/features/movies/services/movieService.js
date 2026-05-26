@@ -18,18 +18,18 @@ export async function getMovieById(id) {
   return response.data;
 }
 
-export async function updateMovie(id, payload) {
-  const response = await axiosInstance.put(
-    `/movies/update-movie/${id}`,
+export async function createMovie(payload) {
+  const response = await axiosInstance.post(
+    "/movies/create-movie",
     payload,
     MOVIE_MULTIPART_CONFIG,
   );
   return response.data;
 }
 
-export async function createMovie(payload) {
-  const response = await axiosInstance.post(
-    "/movies/create-movie",
+export async function updateMovie(id, payload) {
+  const response = await axiosInstance.put(
+    `/movies/update-movie/${id}`,
     payload,
     MOVIE_MULTIPART_CONFIG,
   );

@@ -22,6 +22,7 @@ export const SEAT_STATUS = {
   SELECTED: 'selected',
   VIP: 'vip',
   SOLD: 'sold',
+  RESERVED: 'reserved',
 };
 
 export const BOOKING_STEPS = {

@@ -22,10 +22,6 @@ function MovieListPage() {
   return (
     <div className="page-container space-y-7">
       <div className="space-y-2">
-        <p className="section-label eyebrow-row">
-          <span className="kicker-dot" />
-          {tx('Movies', 'Phim')}
-        </p>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h1 className="text-2xl font-medium text-ink">{tx('Movie catalog', 'Danh mục phim')}</h1>
           <span className="rounded-full border-base bg-cream px-3 py-1 text-xs text-stone">

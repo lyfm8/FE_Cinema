@@ -6,11 +6,17 @@ export async function getProfile() {
 }
 
 export async function updateProfile(payload) {
-  void payload;
-  throw new Error('Update profile API is not available in backend yet.');
+  const response = await axiosInstance.put('/users/profile', payload);
+  return response.data;
+}
+
+export async function changePassword(payload) {
+  const response = await axiosInstance.post('/auth/change-password', payload);
+  return response.data;
 }
 
 export default {
   getProfile,
   updateProfile,
+  changePassword,
 };

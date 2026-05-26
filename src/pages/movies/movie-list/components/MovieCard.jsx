@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Badge from "@/components/ui/Badge";
 import useLanguage from "@/features/i18n/hooks/useLanguage";
 import { formatCurrency } from "@/utils/formatCurrency";

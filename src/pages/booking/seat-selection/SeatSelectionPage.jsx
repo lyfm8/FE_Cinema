@@ -24,10 +24,13 @@ function SeatSelectionPage() {
         <h1 className="text-2xl font-medium text-ink">{tx('Seat selection', 'Chọn ghế')}</h1>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        <section className="surface-card space-y-5 p-4 md:p-6">
-          <div className="mx-auto max-w-lg rounded-full border-base bg-cream py-1.5 text-center text-xs text-stone">
-            {tx('SCREEN THIS WAY', 'MÀN HÌNH PHÍA NÀY')}
+      <div className="grid gap-6 xl:grid-cols-[1fr_300px]">
+        <section className="surface-card space-y-5 p-4 md:p-6 overflow-hidden">
+          <div className="mx-auto max-w-2xl text-center mb-8">
+            <div className="h-2 w-full rounded-[50%] bg-charcoal/20 shadow-[0_15px_15px_-10px_rgba(0,0,0,0.1)]"></div>
+            <p className="mt-4 text-xs font-medium tracking-[0.2em] text-stone">
+              {tx('SCREEN', 'MÀN HÌNH')}
+            </p>
           </div>
 
           <SeatMap seats={seats} selectedSeats={selectedSeats} onToggleSeat={toggleSeat} />
