@@ -20,9 +20,15 @@ export async function forgotPassword(payload) {
   return response.data;
 }
 
+export async function logout() {
+  const response = await axiosInstance.post("/auth/logout");
+  return response.data;
+}
+
 export default {
   login,
   sendOtp,
   register,
   forgotPassword,
+  logout,
 };

@@ -1,4 +1,4 @@
-﻿import { NavLink } from 'react-router-dom';
+﻿import { Link, NavLink } from 'react-router-dom';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 const ADMIN_LINKS = [
@@ -42,14 +42,22 @@ function Sidebar() {
                       ? 'Lịch chiếu'
                       : link.label === 'Bookings'
                         ? 'Đặt vé'
-                        : 'Nguoi dung',
+                        : 'Người dùng',
             )}
           </NavLink>
         ))}
       </nav>
+
+      <div className="mt-6 border-t border-ash pt-4">
+        <Link
+          to="/"
+          className="block rounded-md border-base px-3 py-2 text-sm text-stone transition-colors hover:border-charcoal"
+        >
+          {tx('Back to User Site', 'Về trang người dùng')}
+        </Link>
+      </div>
     </aside>
   );
 }
 
 export default Sidebar;
-
