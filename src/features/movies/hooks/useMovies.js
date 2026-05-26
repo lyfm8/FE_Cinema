@@ -1,58 +1,33 @@
-import { useEffect, useMemo, useState } from 'react';
-import { getMovies } from '@/features/movies/services/movieService';
-import { extractMovieList, normalizeMovieItem } from '@/features/movies/utils/movieAdapter';
-import { mockMovies } from '@/utils/mockData';
+import { useState, useCallback, useEffect } from 'react';
+import { publicMovieService } from '@/features/movies/services/movieService';
 
-function useMovies(initialFilters = {}) {
+export default function useMovies() {
   const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [filters, setFilters] = useState(initialFilters);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchMovies = useCallback(async () => {
+    try {
+      setLoading(true);
+      const result = await publicMovieService.getMovies();
+      // Ensure we only use valid movies
+      const validMovies = (result.data || []).filter(
+        (m) => m && !Number.isNaN(Number(m.id)),
+      );
+      setMovies(validMovies);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch movies:', err);
+      setError('Không thể tải danh sách phim. Vui lòng thử lại sau.');
+      setMovies([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let mounted = true;
+    fetchMovies();
+  }, [fetchMovies]);
 
-    async function loadMovies() {
-      setLoading(true);
-      setError('');
-
-      try {
-        const result = await getMovies(filters);
-        const records = extractMovieList(result);
-
-        if (mounted) {
-          const normalizedMovies = records.map(normalizeMovieItem).filter(Boolean);
-          setMovies(normalizedMovies);
-        }
-      } catch {
-        if (mounted) {
-          setError('Unable to load movies from API. Showing mock data.');
-          setMovies(mockMovies);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadMovies();
-
-    return () => {
-      mounted = false;
-    };
-  }, [filters]);
-
-  const hasData = useMemo(() => movies.length > 0, [movies]);
-
-  return {
-    movies,
-    loading,
-    error,
-    hasData,
-    filters,
-    setFilters,
-  };
+  return { movies, loading, error, refetch: fetchMovies };
 }
-
-export default useMovies;

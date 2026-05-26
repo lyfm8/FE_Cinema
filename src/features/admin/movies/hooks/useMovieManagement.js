@@ -1,19 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  createMovie,
-  deleteMovie,
-  getMovieById,
-  getMovies,
-  updateMovie,
-} from '@/features/movies/services/movieService';
-import {
-  MOVIE_STATUS,
-  buildMovieFormData,
-  extractMovie,
-  extractMovieList,
-  getErrorMessage,
-  normalizeMovie,
-} from '@/features/admin/movies/utils/movieManagementAdapter';
+import { movieService } from '@/features/admin/movies/services/movieService';
+import { MOVIE_STATUS } from '@/features/admin/movies/constants/movieConstants';
+import { buildMovieFormData } from '@/features/admin/movies/utils/movieFormUtils';
+import { getErrorMessage } from '@/core/utils/errorUtils';
 
 /**
  * @param {(en: string, vi: string) => string} tx
@@ -67,10 +56,10 @@ function useMovieManagement(tx) {
     setFetchError('');
 
     try {
-      const result = await getMovies();
-      const movieList = extractMovieList(result)
-        .map(normalizeMovie)
-        .filter((movie) => movie && !Number.isNaN(movie.id));
+      const result = await movieService.getMovies();
+      const movieList = (result.data ?? []).filter(
+        (movie) => movie && !Number.isNaN(Number(movie.id)),
+      );
 
       setMovies(movieList);
     } catch (error) {
@@ -113,10 +102,10 @@ function useMovieManagement(tx) {
       const formData = buildMovieFormData(values, posterFile, editingMovie);
 
       if (formMode === 'edit' && editingMovie) {
-        await updateMovie(editingMovie.id, formData);
+        await movieService.updateMovie(editingMovie.id, formData);
         showToast(tx('Movie updated successfully.', 'Cập nhật phim thành công.'), 'success');
       } else {
-        await createMovie(formData);
+        await movieService.createMovie(formData);
         showToast(tx('Movie created successfully.', 'Tạo phim thành công.'), 'success');
       }
 
@@ -136,11 +125,10 @@ function useMovieManagement(tx) {
     setDetailLoading(true);
 
     try {
-      const result = await getMovieById(movie.id);
-      const movieDetail = normalizeMovie(extractMovie(result));
+      const result = await movieService.getMovieById(movie.id);
 
-      if (movieDetail) {
-        setDetailMovie(movieDetail);
+      if (result.data) {
+        setDetailMovie(result.data);
       }
     } catch {
       // Keep list item data as detail fallback.
@@ -169,7 +157,7 @@ function useMovieManagement(tx) {
     setDeletingMovieId(deleteTarget.id);
 
     try {
-      await deleteMovie(deleteTarget.id);
+      await movieService.deleteMovie(deleteTarget.id);
       showToast(tx('Movie deleted successfully.', 'Xóa phim thành công.'), 'success');
       await loadMovies();
     } catch (error) {

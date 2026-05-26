@@ -1,12 +1,12 @@
 import DataTable from "@/components/shared/DataTable";
 import Button from "@/components/ui/Button";
 import useLanguage from "@/features/i18n/hooks/useLanguage";
+import { SHOWTIME_STATUS } from "@/features/admin/showtimes/constants/showtimeConstants";
 import {
   formatTime,
   formatDateTime,
-  SHOWTIME_STATUS,
   getMovieFormatLabel,
-} from "@/features/admin/showtimes/utils/showtimeAdapter";
+} from "@/features/admin/showtimes/utils/showtimeUtils";
 
 const STATUS_TONE_MAP = {
   SCHEDULED: "border-gold bg-gold/20 text-charcoal",

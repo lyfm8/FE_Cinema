@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MOVIE_STATUS } from '@/features/admin/movies/utils/movieManagementAdapter';
+import { MOVIE_STATUS } from '@/features/admin/movies/constants/movieConstants';
 
 const MOVIE_STATUS_OPTIONS = Object.values(MOVIE_STATUS);
 
