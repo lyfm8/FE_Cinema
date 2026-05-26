@@ -34,6 +34,14 @@ export function extractList(payload) {
   return [];
 }
 
+export function extractPagination(payload) {
+  return (
+    payload?.pagination ||
+    payload?.data?.pagination ||
+    payload?.data?.data?.pagination ||
+    null
+  );
+}
 
 export function normalizeCinema(raw) {
   if (!raw) return null;
@@ -68,13 +76,4 @@ export function normalizeRoom(raw) {
       ? raw.status
       : ROOM_STATUS.ACTIVE,
   };
-}
-
-export function extractPagination(payload) {
-  return (
-    payload?.pagination ||
-    payload?.data?.pagination ||
-    payload?.data?.data?.pagination ||
-    null
-  );
 }
