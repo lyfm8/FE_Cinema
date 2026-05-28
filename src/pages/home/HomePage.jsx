@@ -1,4 +1,5 @@
 import HeroBanner from '@/pages/home/components/HeroBanner';
+import QuickBooking from '@/pages/home/components/QuickBooking';
 import NowShowingSection from '@/pages/home/components/NowShowingSection';
 import ComingSoonSection from '@/pages/home/components/ComingSoonSection';
 import PromotionsSection from '@/pages/home/components/PromotionsSection';
@@ -8,17 +9,12 @@ import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 function HomePage() {
   const {
+    movies,
     nowShowing,
     comingSoon,
-    stats,
-    upcomingShowtimes,
-    activePromotions,
-    audiencePick,
+    featuredMovies,
     loading,
     error,
-    canAccessAdminDashboard,
-    handleExploreMovies,
-    handleGoToAdminDashboard,
     refetch,
   } = useHomePage();
 
@@ -54,27 +50,24 @@ function HomePage() {
   }
 
   return (
-    <div className="page-container space-y-10 pb-12">
-      <HeroBanner
-        onExplore={handleExploreMovies}
-        showAdminAccess={canAccessAdminDashboard}
-        onGoAdmin={handleGoToAdminDashboard}
-        stats={stats}
-        upcomingShowtimes={upcomingShowtimes}
-        audiencePick={audiencePick}
-      />
+    <div className="bg-galaxyBg">
+      {/* Hero Banner — Full width */}
+      <HeroBanner featuredMovies={featuredMovies} />
 
+      {/* Quick Booking Bar */}
+      <QuickBooking movies={nowShowing.length > 0 ? nowShowing : movies} />
+
+      {/* Now Showing */}
       {nowShowing.length > 0 && (
         <NowShowingSection movies={nowShowing} />
       )}
 
-      {activePromotions.length > 0 && (
-        <PromotionsSection promotions={activePromotions} />
-      )}
-
+      {/* Coming Soon */}
       {comingSoon.length > 0 && (
         <ComingSoonSection movies={comingSoon} />
       )}
+
+      {/* Promotions — hidden when empty */}
     </div>
   );
 }

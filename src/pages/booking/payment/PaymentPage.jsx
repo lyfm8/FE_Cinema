@@ -20,10 +20,6 @@ function PaymentPage() {
   return (
     <div className="page-container space-y-6">
       <div className="space-y-2">
-        <p className="section-label eyebrow-row">
-          <span className="kicker-dot" />
-          {tx('Booking', 'Đặt vé')}
-        </p>
         <h1 className="text-2xl font-medium text-ink">{tx('Payment', 'Thanh toán')}</h1>
       </div>
 

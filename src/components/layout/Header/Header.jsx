@@ -46,6 +46,9 @@ function Header() {
               <NavLink to="/" end className={navClassName}>
                 {tx('Home', 'Trang chủ')}
               </NavLink>
+              <NavLink to="/cinemas" className={navClassName}>
+                {tx('Cinemas', 'Rạp')}
+              </NavLink>
               <NavLink to="/movies" className={navClassName}>
                 {tx('Movies', 'Phim')}
               </NavLink>

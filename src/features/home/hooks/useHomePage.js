@@ -1,51 +1,50 @@
-import { useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import useAuth from "@/features/auth/hooks/useAuth";
-import useMovies from "@/features/movies/hooks/useMovies";
-import { USER_ROLES } from "@/utils/constants";
+import { useState, useCallback, useEffect } from 'react';
+import { publicMovieService } from '@/features/movies/services/movieService';
 
-function useHomePage() {
-  const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
-  const { movies, loading, error, setFilters } = useMovies({
-    page: 1,
-    pageSize: 8,
-  });
+export default function useHomePage() {
+  const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const nowShowing = useMemo(() => movies.slice(0, 4), [movies]);
-  const comingSoon = useMemo(() => movies.slice(4, 8), [movies]);
-  const stats = useMemo(
-    () => ({
-      totalCinemas: 0,
-      todayShowtimes: 0,
-      totalNowShowing: nowShowing.length,
-      totalComingSoon: comingSoon.length,
-    }),
-    [comingSoon.length, nowShowing.length],
-  );
-  const upcomingShowtimes = useMemo(() => [], []);
-  const activePromotions = useMemo(() => [], []);
-  const audiencePick = useMemo(() => nowShowing[0] ?? null, [nowShowing]);
-  const canAccessAdminDashboard =
-    isAuthenticated && user?.role === USER_ROLES.ADMIN;
-  const refetch = useCallback(() => {
-    setFilters((current) => ({ ...current }));
-  }, [setFilters]);
+  const fetchMovies = useCallback(async () => {
+    try {
+      setLoading(true);
+      const result = await publicMovieService.getMovies();
+      const validMovies = (result.data || [])
+        .filter((m) => m && !Number.isNaN(Number(m.id)))
+        .map((m) => ({ ...m, title: m.title || m.name }));
+      setMovies(validMovies);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch movies:', err);
+      setError('Không thể tải danh sách phim. Vui lòng thử lại sau.');
+      setMovies([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMovies();
+  }, [fetchMovies]);
+
+  // Split movies by status
+  const nowShowing = movies.filter((m) => m.status === 'NOW_SHOWING');
+  const comingSoon = movies.filter((m) => m.status === 'COMING_SOON');
+
+  // Featured movies for hero banner (prefer now-showing, fallback to coming-soon)
+  const moviesWithPoster = nowShowing.filter((m) => m.posterUrl);
+  const featuredMovies = moviesWithPoster.length > 0
+    ? moviesWithPoster.slice(0, 5)
+    : comingSoon.filter((m) => m.posterUrl).slice(0, 5);
 
   return {
+    movies,
     nowShowing,
     comingSoon,
-    stats,
-    upcomingShowtimes,
-    activePromotions,
-    audiencePick,
+    featuredMovies,
     loading,
     error,
-    canAccessAdminDashboard,
-    handleExploreMovies: () => navigate("/movies"),
-    handleGoToAdminDashboard: () => navigate("/admin"),
-    refetch,
+    refetch: fetchMovies,
   };
 }
-
-export default useHomePage;
