@@ -8,8 +8,6 @@ function UserManagementPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-3xl font-medium text-ink">{tx('User Management', 'Quản lý người dùng')}</h1>
-
       <section className="surface-card grid gap-3 p-4 md:grid-cols-[1fr_auto_auto] md:items-center">
         <p className="text-sm text-stone">{summary.description}</p>
         <span className="rounded-full border-base bg-cream px-3 py-1 text-xs text-stone">{summary.userCountLabel}</span>

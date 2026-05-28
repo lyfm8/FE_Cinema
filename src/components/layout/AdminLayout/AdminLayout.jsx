@@ -1,4 +1,4 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import useAuth from '@/features/auth/hooks/useAuth';
@@ -9,6 +9,7 @@ function AdminLayout() {
   const { isVietnamese, toggleLanguage, tx } = useLanguage();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const location = useLocation();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -23,11 +24,26 @@ function AdminLayout() {
   const displayName = user?.fullName || user?.email?.split('@')[0] || tx('User', 'Người dùng');
   const initial = displayName.charAt(0).toUpperCase();
 
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/admin') return tx('Dashboard', 'Tổng quan');
+    if (path.startsWith('/admin/movies')) return tx('Movie Management', 'Quản lý phim');
+    if (path.startsWith('/admin/cinemas')) return tx('Cinema Management', 'Quản lý rạp');
+    if (path.startsWith('/admin/rooms')) return tx('Room Management', 'Quản lý phòng');
+    if (path.startsWith('/admin/ticket-prices')) return tx('Ticket Prices', 'Quản lý giá vé');
+    if (path.startsWith('/admin/showtimes')) return tx('Showtimes', 'Quản lý lịch chiếu');
+    if (path.startsWith('/admin/bookings')) return tx('Bookings', 'Quản lý đặt vé');
+    if (path.startsWith('/admin/users')) return tx('User Management', 'Quản lý người dùng');
+    return tx('Admin Panel', 'Bảng quản trị');
+  };
+
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-50">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-gray-100 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-end px-6 gap-4 sticky top-0 z-40">
+        <header className="h-16 border-b border-gray-100 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-between px-6 gap-4 sticky top-0 z-40">
+          <h1 className="text-xl font-bold text-ink">{getPageTitle()}</h1>
+          <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={toggleLanguage}
@@ -78,6 +94,7 @@ function AdminLayout() {
                 </button>
               </div>
             )}
+          </div>
           </div>
         </header>
 

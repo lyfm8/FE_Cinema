@@ -8,8 +8,6 @@ function BookingManagementPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-3xl font-medium text-ink">{tx('Booking Management', 'Quản lý đặt vé')}</h1>
-
       <section className="grid gap-3 sm:grid-cols-3">
         <article className="surface-card p-3">
           <p className="section-label mb-1">{tx('Total Today', 'Tổng hôm nay')}</p>

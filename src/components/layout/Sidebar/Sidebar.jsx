@@ -17,7 +17,7 @@ function Sidebar() {
 
   return (
     <aside className="h-screen w-64 border-r border-gray-100 bg-white p-4 shadow-sm flex flex-col">
-      <div className="mb-8 px-2 mt-2">
+      <div className="mb-6 pb-6 px-2 mt-2 border-b border-gray-100">
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">{tx('Admin Panel', 'Bảng quản trị')}</p>
         <Link to="/admin" className="flex items-center gap-3 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f26b38] text-white font-bold text-lg shadow-md shadow-[#f26b38]/20 transition-transform group-hover:scale-105">

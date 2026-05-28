@@ -65,13 +65,6 @@ function TicketPriceManagementPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-medium text-ink">
-            {tx('Ticket Prices', 'Quản lý giá vé')}
-          </h1>
-        </div>
-      </div>
 
       <section className="surface-card space-y-3 p-4">
         {loading ? (

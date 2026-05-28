@@ -87,13 +87,7 @@ function CinemaManagementPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-medium text-ink">
-            {tx("Cinema Management", "Quản lý rạp")}
-          </h1>
-        </div>
-
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <Button onClick={handleOpenCreateCinema}>
           {tx("Add cinema", "Thêm rạp")}
         </Button>
