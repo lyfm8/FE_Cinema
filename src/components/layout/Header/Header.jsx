@@ -38,7 +38,7 @@ function Header() {
               </div>
               <div className="leading-tight">
                 <p className="movie-title text-xl text-[#034ea2] tracking-wide m-0">CINEPLEX</p>
-                <p className="text-[10px] uppercase tracking-widest text-stone m-0">{tx('Cinema Management', 'Quản lý rạp phim')}</p>
+                <p className="text-[10px] uppercase tracking-widest text-stone m-0">{tx('Online Cinema', 'Rạp phim online')}</p>
               </div>
             </Link>
 

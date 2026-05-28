@@ -57,9 +57,9 @@ function useMovieManagement(tx) {
 
     try {
       const result = await movieService.getMovies();
-      const movieList = (result.data ?? []).filter(
-        (movie) => movie && !Number.isNaN(Number(movie.id)),
-      );
+      const movieList = (result.data ?? [])
+        .filter((movie) => movie && !Number.isNaN(Number(movie.id)))
+        .map((movie) => ({ ...movie, title: movie.title || movie.name }));
 
       setMovies(movieList);
     } catch (error) {
@@ -128,7 +128,8 @@ function useMovieManagement(tx) {
       const result = await movieService.getMovieById(movie.id);
 
       if (result.data) {
-        setDetailMovie(result.data);
+        const m = result.data;
+        setDetailMovie({ ...m, title: m.title || m.name });
       }
     } catch {
       // Keep list item data as detail fallback.

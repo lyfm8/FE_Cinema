@@ -1,4 +1,4 @@
-﻿import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 const ADMIN_LINKS = [
@@ -17,9 +17,17 @@ function Sidebar() {
 
   return (
     <aside className="h-screen w-60 border-base border-r bg-paper p-4">
-      <div className="mb-6 border-base rounded-lg bg-cream p-3">
-        <p className="section-label mb-1">{tx('Admin Panel', 'Bảng quản trị')}</p>
-        <p className="movie-title text-lg tracking-[0.08em]">CINEPLEX</p>
+      <div className="mb-6 px-1">
+        <p className="section-label mb-3">{tx('Admin Panel', 'Bảng quản trị')}</p>
+        <Link to="/admin" className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-[#f26b38] text-white font-bold text-lg">
+            C
+          </div>
+          <div className="leading-tight">
+            <p className="movie-title text-xl text-[#034ea2] tracking-wide m-0">CINEPLEX</p>
+            <p className="text-[10px] uppercase tracking-widest text-stone m-0">{tx('Online Cinema', 'Rạp phim online')}</p>
+          </div>
+        </Link>
       </div>
 
       <nav className="flex flex-col gap-2 text-sm">
@@ -54,14 +62,6 @@ function Sidebar() {
         ))}
       </nav>
 
-      <div className="mt-6 border-t border-ash pt-4">
-        <Link
-          to="/"
-          className="block rounded-md border-base px-3 py-2 text-sm text-stone transition-colors hover:border-charcoal"
-        >
-          {tx('Back to User Site', 'Về trang người dùng')}
-        </Link>
-      </div>
     </aside>
   );
 }

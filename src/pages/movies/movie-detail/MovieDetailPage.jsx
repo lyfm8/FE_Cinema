@@ -35,7 +35,7 @@ function MovieDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
+      <div className="flex flex-col gap-8">
         <MovieInfo movie={movie} onOpenTrailer={() => setOpenTrailer(true)} />
         <ShowtimeList showtimes={showtimes} />
       </div>
