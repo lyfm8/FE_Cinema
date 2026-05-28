@@ -10,14 +10,6 @@ function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <p className="section-label eyebrow-row">
-          <span className="kicker-dot" />
-          {tx('Admin', 'Quản trị')}
-        </p>
-        <h1 className="text-3xl font-medium text-ink">{tx('Dashboard', 'Tổng quan')}</h1>
-      </div>
-
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (
           <StatCard key={card.label} label={card.label} value={card.value} />

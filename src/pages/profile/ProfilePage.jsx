@@ -11,10 +11,6 @@ function ProfilePage() {
   return (
     <div className="page-container space-y-6">
       <div className="space-y-2">
-        <p className="section-label eyebrow-row">
-          <span className="kicker-dot" />
-          {tx('Account', 'Tài khoản')}
-        </p>
         <h1 className="text-2xl font-medium text-ink">{tx('Profile', 'Hồ sơ')}</h1>
       </div>
 

@@ -10,8 +10,8 @@
   body {
     margin: 0;
     font-family: Inter, system-ui, -apple-system, sans-serif;
-    color: #2C2C2A;
-    background-color: #FAFAF8;
+    color: #333333;
+    background-color: #fcfcfc;
     font-weight: 400;
     line-height: 1.5;
   }
@@ -24,23 +24,23 @@
 
 @layer components {
   .border-base {
-    border-width: 0.5px;
+    border-width: 1px;
     border-style: solid;
-    border-color: #D3D1C7;
+    border-color: #E5E7EB;
   }
 
   .border-selected {
     border-width: 1.5px;
     border-style: solid;
-    border-color: #1A1A1A;
+    border-color: #034ea2;
   }
 
   .section-label {
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #5F5E5A;
-    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: #666666;
+    font-weight: 600;
   }
 
   .page-container {
@@ -52,17 +52,16 @@
   }
 
   .movie-title {
-    font-family: 'Noto Serif', Georgia, 'Times New Roman', serif;
-    color: #1A1A1A;
-    font-weight: 400;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: #111111;
+    font-weight: 600;
   }
 
   .surface-card {
-    border-width: 0.5px;
-    border-style: solid;
-    border-color: #D3D1C7;
-    border-radius: 12px;
-    background-color: #FAFAF8;
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    border-radius: 16px;
+    background-color: #FFFFFF;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
   }
 
   .kicker-dot {
@@ -77,5 +76,19 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+  }
+
+  @keyframes slow-pan {
+    0%, 100% {
+      transform: scale(1.05) translate(0, 0);
+    }
+    50% {
+      transform: scale(1.2) translate(-4%, 4%);
+    }
+  }
+
+  .animate-slow-pan {
+    animation: slow-pan 6s ease-in-out infinite;
+    transform-origin: center center;
   }
 }

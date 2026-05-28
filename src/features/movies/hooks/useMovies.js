@@ -11,9 +11,9 @@ export default function useMovies() {
       setLoading(true);
       const result = await publicMovieService.getMovies();
       // Ensure we only use valid movies
-      const validMovies = (result.data || []).filter(
-        (m) => m && !Number.isNaN(Number(m.id)),
-      );
+      const validMovies = (result.data || [])
+        .filter((m) => m && !Number.isNaN(Number(m.id)))
+        .map((m) => ({ ...m, title: m.title || m.name }));
       setMovies(validMovies);
       setError(null);
     } catch (err) {

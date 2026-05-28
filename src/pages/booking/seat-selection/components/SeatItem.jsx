@@ -3,11 +3,11 @@ import { SEAT_STATUS } from '@/utils/constants';
 /** @param {{ seatId: string, status: string, col: number, onToggle: (seatId: string) => void }} props */
 function SeatItem({ seatId, status, col, onToggle }) {
   const statusClassMap = {
-    [SEAT_STATUS.AVAILABLE]: 'bg-paper border-base border-ash cursor-pointer hover:border-charcoal hover:bg-ash/20',
-    [SEAT_STATUS.SELECTED]: 'bg-ink border-selected border-ink text-paper cursor-pointer shadow-sm',
-    [SEAT_STATUS.RESERVED]: 'bg-gold border-base border-gold-dark cursor-not-allowed text-charcoal opacity-80',
-    [SEAT_STATUS.VIP]: 'bg-gold border-base border-gold-dark cursor-pointer text-charcoal hover:brightness-95',
-    [SEAT_STATUS.SOLD]: 'bg-fog border-base border-stone opacity-50 cursor-not-allowed',
+    [SEAT_STATUS.AVAILABLE]: 'bg-white border-base border-gray-300 cursor-pointer hover:border-galaxyOrange text-gray-500 hover:text-galaxyOrange',
+    [SEAT_STATUS.SELECTED]: 'bg-galaxyOrange border-galaxyOrangeHover text-white cursor-pointer shadow-md',
+    [SEAT_STATUS.RESERVED]: 'bg-gray-300 border-gray-400 cursor-not-allowed text-white opacity-80',
+    [SEAT_STATUS.VIP]: 'bg-red-500 border-red-600 cursor-pointer text-white hover:brightness-95',
+    [SEAT_STATUS.SOLD]: 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed opacity-50 text-transparent',
   };
 
   const disabled = status === SEAT_STATUS.SOLD || status === SEAT_STATUS.RESERVED;

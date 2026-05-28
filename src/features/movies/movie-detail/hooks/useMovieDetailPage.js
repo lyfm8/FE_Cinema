@@ -29,8 +29,9 @@ export default function useMovieDetailPage(movieId) {
         ]);
 
         if (isMounted) {
-          setMovie(movieRes.data);
-          setShowtimes(showtimesRes.data || []);
+          const m = movieRes.data;
+          setMovie({ ...m, title: m?.title || m?.name });
+          setShowtimes(showtimesRes.data || {});
         }
       } catch (err) {
         if (isMounted) {

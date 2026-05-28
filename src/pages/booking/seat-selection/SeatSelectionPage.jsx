@@ -16,12 +16,11 @@ function SeatSelectionPage() {
 
   return (
     <div className="page-container space-y-6">
-      <div className="space-y-2">
-        <p className="section-label eyebrow-row">
-          <span className="kicker-dot" />
+      <div className="space-y-2 mb-4">
+        <p className="text-sm font-bold text-galaxyBlue uppercase tracking-widest">
           {tx('Booking', 'Đặt vé')}
         </p>
-        <h1 className="text-2xl font-medium text-ink">{tx('Seat selection', 'Chọn ghế')}</h1>
+        <h1 className="text-3xl font-bold text-ink">{tx('Seat selection', 'Chọn ghế')}</h1>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_300px]">

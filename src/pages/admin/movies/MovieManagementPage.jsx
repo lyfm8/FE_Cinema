@@ -37,15 +37,7 @@ function MovieManagementPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-2">
-          <p className="section-label eyebrow-row">
-            <span className="kicker-dot" />
-            {tx('Admin', 'Quản trị')}
-          </p>
-          <h1 className="text-3xl font-medium text-ink">{tx('Movie Management', 'Quản lý phim')}</h1>
-        </div>
-
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <Button onClick={handleOpenCreateForm}>{tx('Add movie', 'Thêm phim')}</Button>
       </div>
 
