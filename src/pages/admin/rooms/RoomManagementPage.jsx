@@ -82,10 +82,6 @@ function RoomManagementPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="section-label eyebrow-row">
-            <span className="kicker-dot" />
-            {tx("Admin", "Quản trị")}
-          </p>
           <h1 className="text-3xl font-medium text-ink">
             {tx("Room Management", "Quản lý phòng")}
           </h1>

@@ -31,11 +31,6 @@ function HeroBanner({
       <div className="grid gap-0 lg:grid-cols-[1.3fr_1fr]">
         {/* ── Left panel ── */}
         <div className="space-y-5 border-base border-b p-6 md:p-8 lg:border-b-0 lg:border-r">
-          <p className="section-label eyebrow-row">
-            <span className="kicker-dot" />
-            {tx('Curated for tonight', 'Đề xuất tối nay')}
-          </p>
-
           <h1 className="movie-title max-w-xl text-3xl leading-tight md:text-[2.05rem]">
             {tx(
               'Discover movies, compare showtimes, and book seats — all in one place',
@@ -51,12 +46,6 @@ function HeroBanner({
           </p>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={onExplore}>{tx('Browse movies', 'Xem danh sách phim')}</Button>
-            {showAdminAccess ? (
-              <Button variant="secondary" onClick={onGoAdmin}>
-                {tx('Open Admin Dashboard', 'Vào dashboard admin')}
-              </Button>
-            ) : null}
             <span className="rounded-full border-base bg-cream px-3 py-2 text-xs text-stone">
               {stats.totalCinemas || 0} {tx('cinemas online', 'rạp đang mở')}
             </span>

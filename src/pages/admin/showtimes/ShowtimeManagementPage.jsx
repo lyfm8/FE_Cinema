@@ -48,10 +48,6 @@ function ShowtimeManagementPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-2">
-          <p className="section-label eyebrow-row">
-            <span className="kicker-dot" />
-            {tx("Admin", "Quản trị")}
-          </p>
           <h1 className="text-3xl font-medium text-ink">
             {tx("Showtime Management", "Quản lý lịch chiếu")}
           </h1>

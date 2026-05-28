@@ -8,10 +8,6 @@ function UserManagementPage() {
 
   return (
     <div className="space-y-5">
-      <p className="section-label eyebrow-row">
-        <span className="kicker-dot" />
-        {tx('Admin', 'Quản trị')}
-      </p>
       <h1 className="text-3xl font-medium text-ink">{tx('User Management', 'Quản lý người dùng')}</h1>
 
       <section className="surface-card grid gap-3 p-4 md:grid-cols-[1fr_auto_auto] md:items-center">

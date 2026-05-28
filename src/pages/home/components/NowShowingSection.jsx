@@ -7,53 +7,52 @@ function MovieHomeCard({ movie }) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <article className="group overflow-hidden rounded-lg border-base bg-paper transition-all duration-200 hover:border-charcoal hover:shadow-sm">
-      <div className="relative flex h-52 items-end overflow-hidden bg-cream">
+    <article className="group flex flex-col overflow-hidden rounded-xl bg-white transition-all duration-300 hover:shadow-lg">
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-gray-100">
         {movie.posterUrl && !imgError ? (
           <img
             src={movie.posterUrl}
             alt={movie.title}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cream to-ash">
-            <span className="text-4xl text-fog">🎬</span>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-4xl text-gray-300">🎬</span>
           </div>
         )}
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
-        {/* Genre badge */}
-        <div className="relative z-10 flex w-full items-end justify-between p-3">
-          <span className="rounded-full bg-paper/90 px-2 py-0.5 text-[11px] text-stone backdrop-blur-sm">
-            {movie.genre || tx('N/A', 'N/A')}
-          </span>
-          {movie.ageLimit && (
-            <span className="rounded-full bg-rose/90 px-2 py-0.5 text-[11px] font-medium text-paper">
-              {movie.ageLimit}+
-            </span>
-          )}
+        {/* Hover Overlay with Buttons */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-galaxyBlue/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-sm">
+          <Link to={`/booking/${movie.id}/seats`} className="w-3/4 text-center rounded bg-galaxyOrange px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-galaxyOrangeHover shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            {tx('Buy Ticket', 'Mua Vé')}
+          </Link>
+          <Link to={`/movies/${movie.id}`} className="w-3/4 text-center rounded border-2 border-white px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-white hover:text-galaxyBlue shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
+            {tx('Details', 'Xem Chi Tiết')}
+          </Link>
         </div>
       </div>
 
-      <div className="space-y-2 p-3">
-        <div className="flex items-center justify-between text-[11px] text-stone">
-          <span>{movie.durationMinutes ? `${movie.durationMinutes} ${tx('min', 'phút')}` : '—'}</span>
-          <span>{movie.language || '—'}</span>
+      <div className="flex flex-1 flex-col justify-between pt-3 pb-2 px-2">
+        <div className="flex items-start gap-2">
+          <Link
+            to={`/movies/${movie.id}`}
+            className="movie-title block text-lg font-bold uppercase transition-colors hover:text-galaxyBlue line-clamp-2"
+          >
+            {movie.title}
+          </Link>
         </div>
-
-        <Link
-          to={`/movies/${movie.id}`}
-          className="movie-title block truncate text-lg leading-tight transition-colors group-hover:text-charcoal"
-        >
-          {movie.title}
-        </Link>
-
-        {movie.director && (
-          <p className="truncate text-xs text-stone">
-            {tx('Director', 'Đạo diễn')}: {movie.director}
-          </p>
-        )}
+        
+        <div className="mt-2 flex flex-wrap items-center text-sm font-medium text-stone">
+          <span>{movie.genre || tx('N/A', 'N/A')}</span>
+          <span className="mx-2 text-gray-300">•</span>
+          <span>{movie.durationMinutes ? `${movie.durationMinutes} ${tx('min', 'phút')}` : '—'}</span>
+          {movie.ageLimit && (
+            <>
+              <span className="mx-2 text-gray-300">•</span>
+              <span className="text-galaxyOrange font-bold">{movie.ageLimit}+</span>
+            </>
+          )}
+        </div>
       </div>
     </article>
   );
