@@ -7,8 +7,8 @@ function MovieHomeCard({ movie }) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl bg-white transition-all duration-300 hover:shadow-lg">
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-gray-100">
+    <article className="group flex flex-col overflow-hidden rounded-xl bg-white border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+      <div className="relative aspect-[2/3] w-full overflow-hidden bg-gray-100">
         {movie.posterUrl && !imgError ? (
           <img
             src={movie.posterUrl}
@@ -17,40 +17,49 @@ function MovieHomeCard({ movie }) {
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl text-gray-300">🎬</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+            <span className="text-5xl text-gray-300">🎬</span>
           </div>
         )}
+
+        {/* Age limit badge */}
+        {movie.ageLimit && (
+          <div className="absolute top-3 right-3">
+            <span className="rounded-md bg-[#f26b38] px-2 py-0.5 text-xs font-bold text-white shadow-lg">
+              {movie.ageLimit}+
+            </span>
+          </div>
+        )}
+
         {/* Hover Overlay with Buttons */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-galaxyBlue/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-sm">
-          <Link to={`/booking/${movie.id}/seats`} className="w-3/4 text-center rounded bg-galaxyOrange px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-galaxyOrangeHover shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#034ea2]/70 opacity-0 transition-all duration-300 group-hover:opacity-100 backdrop-blur-sm">
+          <Link
+            to={`/booking/${movie.id}/seats`}
+            className="w-3/4 text-center rounded-lg bg-[#f26b38] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#fb9440] shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300"
+          >
             {tx('Buy Ticket', 'Mua Vé')}
           </Link>
-          <Link to={`/movies/${movie.id}`} className="w-3/4 text-center rounded border-2 border-white px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-white hover:text-galaxyBlue shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
-            {tx('Details', 'Xem Chi Tiết')}
+          <Link
+            to={`/movies/${movie.id}`}
+            className="w-3/4 text-center rounded-lg border-2 border-white px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-white hover:text-[#034ea2] shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75"
+          >
+            {tx('Details', 'Chi Tiết')}
           </Link>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col justify-between pt-3 pb-2 px-2">
-        <div className="flex items-start gap-2">
-          <Link
-            to={`/movies/${movie.id}`}
-            className="movie-title block text-lg font-bold uppercase transition-colors hover:text-galaxyBlue line-clamp-2"
-          >
-            {movie.title}
-          </Link>
-        </div>
-        
-        <div className="mt-2 flex flex-wrap items-center text-sm font-medium text-stone">
-          <span>{movie.genre || tx('N/A', 'N/A')}</span>
-          <span className="mx-2 text-gray-300">•</span>
-          <span>{movie.durationMinutes ? `${movie.durationMinutes} ${tx('min', 'phút')}` : '—'}</span>
-          {movie.ageLimit && (
-            <>
-              <span className="mx-2 text-gray-300">•</span>
-              <span className="text-galaxyOrange font-bold">{movie.ageLimit}+</span>
-            </>
+      <div className="flex flex-1 flex-col justify-between p-3">
+        <Link
+          to={`/movies/${movie.id}`}
+          className="font-bold text-base text-ink uppercase leading-snug transition-colors hover:text-[#034ea2] line-clamp-2"
+        >
+          {movie.title}
+        </Link>
+
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs font-medium text-gray-500">
+          <span className="rounded bg-gray-100 px-2 py-0.5">{movie.genre || tx('N/A', 'N/A')}</span>
+          {movie.durationMinutes && (
+            <span className="rounded bg-gray-100 px-2 py-0.5">{movie.durationMinutes} {tx('min', 'phút')}</span>
           )}
         </div>
       </div>
@@ -63,20 +72,33 @@ function NowShowingSection({ movies }) {
   const { tx } = useLanguage();
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <p className="section-label mb-2 flex items-center gap-2">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-success-green" />
-            {tx('Now Showing', 'Đang chiếu')}
-          </p>
-          <h2 className="text-xl font-medium text-ink">{tx('Current box office lineup', 'Danh sách phim đang hot')}</h2>
+    <section className="page-container py-10">
+      {/* Section Header */}
+      <div className="flex items-end justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-1.5 rounded-full bg-[#f26b38]" />
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#f26b38] mb-1">
+              {tx('Now Showing', 'Đang chiếu')}
+            </p>
+            <h2 className="text-2xl font-bold text-ink">
+              {tx('Movies in theaters', 'Phim đang chiếu tại rạp')}
+            </h2>
+          </div>
         </div>
-        <Link to="/movies" className="whitespace-nowrap text-sm text-stone transition-colors hover:text-charcoal">
-          {tx('View all', 'Xem tất cả')} →
+        <Link
+          to="/movies"
+          className="group whitespace-nowrap inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 transition-all hover:border-[#034ea2] hover:text-[#034ea2] hover:shadow-sm"
+        >
+          {tx('View all', 'Xem tất cả')}
+          <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+
+      {/* Movie Grid */}
+      <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {movies.map((movie) => (
           <MovieHomeCard key={movie.id} movie={movie} />
         ))}

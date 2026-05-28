@@ -14,7 +14,7 @@ function ConfirmationPage() {
           <span className="kicker-dot" />
           {tx('Confirmation', 'Xác nhận')}
         </p>
-        <h1 className="text-3xl font-medium text-ink">{tx('Booking confirmed', 'Đặt vé thanh cong')}</h1>
+        <h1 className="text-3xl font-medium text-ink">{tx('Booking confirmed', 'Đặt vé thành công')}</h1>
         <p className="text-sm text-stone">
           {tx(
             'Your e-ticket is ready. Show this screen at the cinema gate.',

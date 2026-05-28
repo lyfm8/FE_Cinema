@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { getProfile, updateProfile } from '@/features/profile/services/userService';
-import { getMyBookings } from '@/features/booking/services/bookingService';
-import { mockProfileBookings } from '@/utils/mockData';
 import { AUTH_STORAGE_KEYS } from '@/utils/constants';
 
 const DEFAULT_PROFILE = {
@@ -38,16 +36,7 @@ function normalizeProfile(payload) {
   };
 }
 
-function normalizeBooking(item) {
-  return {
-    id: item.bookingCode || String(item.id || ''),
-    createdAt: item.createdAt,
-    status: item.status || 'PENDING',
-    movieTitle: item?.showtime?.movie?.title || '',
-    showtimeAt: item?.showtime?.startTime || '',
-    totalAmount: Number(item?.totalAmount || 0),
-  };
-}
+
 
 function readCurrentUserFromStorage() {
   try {
@@ -95,7 +84,6 @@ function useProfilePage() {
         })
       : DEFAULT_PROFILE,
   );
-  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -109,25 +97,17 @@ function useProfilePage() {
       setLoading(true);
       setError('');
 
-      const [profileResult, bookingsResult] = await Promise.allSettled([getProfile(), getMyBookings()]);
+      const profileResult = await getProfile();
 
       if (!mounted) {
         return;
       }
 
-      if (profileResult.status === 'fulfilled') {
-        const profileData = profileResult.value?.data || profileResult.value;
+      if (profileResult && profileResult.status !== 'rejected') {
+        const profileData = profileResult.data || profileResult;
         setProfile(normalizeProfile(profileData));
       } else {
         setError('Unable to load complete profile data.');
-      }
-
-      if (bookingsResult.status === 'fulfilled') {
-        const bookingsData = bookingsResult.value?.data || bookingsResult.value;
-        const normalized = Array.isArray(bookingsData) ? bookingsData.map(normalizeBooking) : [];
-        setBookings(normalized);
-      } else {
-        setBookings(mockProfileBookings);
       }
 
       setLoading(false);
@@ -177,7 +157,6 @@ function useProfilePage() {
 
   return {
     profile,
-    bookings,
     loading,
     error,
     saving,

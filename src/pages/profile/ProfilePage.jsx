@@ -1,6 +1,5 @@
 import ProfileInfo from '@/pages/profile/components/ProfileInfo';
 import ChangePasswordForm from '@/pages/profile/components/ChangePasswordForm';
-import BookingHistory from '@/pages/profile/components/BookingHistory';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 import useProfilePage from '@/features/profile/hooks/useProfilePage';
 
@@ -29,7 +28,6 @@ function ProfilePage() {
           onSave={saveProfile}
         />
         <ChangePasswordForm />
-        <BookingHistory bookings={bookings} loading={loading} />
       </div>
     </div>
   );
