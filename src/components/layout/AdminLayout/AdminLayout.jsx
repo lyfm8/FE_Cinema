@@ -24,10 +24,10 @@ function AdminLayout() {
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <div className="flex min-h-screen bg-paper">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-base bg-white shadow-sm flex items-center justify-end px-6 gap-4 sticky top-0 z-40">
+        <header className="h-16 border-b border-gray-100 bg-white/80 backdrop-blur-md shadow-sm flex items-center justify-end px-6 gap-4 sticky top-0 z-40">
           <button
             type="button"
             onClick={toggleLanguage}

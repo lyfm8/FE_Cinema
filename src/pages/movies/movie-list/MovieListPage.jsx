@@ -31,7 +31,7 @@ function MovieListPage() {
       </div>
 
       <div className="surface-card p-4">
-        <p className="section-label mb-3">{tx('Popular Genres', 'Thể loại pho bien')}</p>
+        <p className="section-label mb-3">{tx('Popular Genres', 'Thể loại phổ biến')}</p>
         <div className="flex flex-wrap gap-2">
           {highlightedGenres.map((genre) => (
             <span key={genre} className="rounded-full border-base bg-cream px-3 py-1 text-xs text-stone">

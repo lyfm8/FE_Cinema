@@ -16,28 +16,32 @@ function Sidebar() {
   const { tx } = useLanguage();
 
   return (
-    <aside className="h-screen w-60 border-base border-r bg-paper p-4">
-      <div className="mb-6 px-1">
-        <p className="section-label mb-3">{tx('Admin Panel', 'Bảng quản trị')}</p>
-        <Link to="/admin" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-[#f26b38] text-white font-bold text-lg">
+    <aside className="h-screen w-64 border-r border-gray-100 bg-white p-4 shadow-sm flex flex-col">
+      <div className="mb-8 px-2 mt-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">{tx('Admin Panel', 'Bảng quản trị')}</p>
+        <Link to="/admin" className="flex items-center gap-3 group">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f26b38] text-white font-bold text-lg shadow-md shadow-[#f26b38]/20 transition-transform group-hover:scale-105">
             C
           </div>
           <div className="leading-tight">
-            <p className="movie-title text-xl text-[#034ea2] tracking-wide m-0">CINEPLEX</p>
-            <p className="text-[10px] uppercase tracking-widest text-stone m-0">{tx('Online Cinema', 'Rạp phim online')}</p>
+            <p className="font-sans text-xl font-bold tracking-wide text-[#034ea2] m-0">CINEPLEX</p>
+            <p className="text-[10px] uppercase tracking-widest text-gray-500 m-0">{tx('Online Cinema', 'Rạp phim online')}</p>
           </div>
         </Link>
       </div>
 
-      <nav className="flex flex-col gap-2 text-sm">
+      <nav className="flex flex-col gap-1.5 flex-1 overflow-y-auto">
         {ADMIN_LINKS.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}
             end={link.end}
             className={({ isActive }) =>
-              `rounded-md px-3 py-2 transition-colors ${isActive ? 'border-selected bg-cream text-ink' : 'border-base text-stone hover:border-charcoal'}`
+              `flex items-center rounded-lg px-4 py-2.5 transition-all duration-200 text-sm ${
+                isActive 
+                  ? 'bg-[#034ea2]/10 text-[#034ea2] font-bold' 
+                  : 'text-gray-500 font-medium hover:bg-gray-50 hover:text-charcoal'
+              }`
             }
           >
             {tx(
@@ -61,7 +65,6 @@ function Sidebar() {
           </NavLink>
         ))}
       </nav>
-
     </aside>
   );
 }
