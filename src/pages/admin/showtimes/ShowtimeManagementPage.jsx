@@ -1,7 +1,9 @@
 import ShowtimeTable from "@/pages/admin/showtimes/components/ShowtimeTable";
 import ShowtimeFormModal from "@/pages/admin/showtimes/components/ShowtimeFormModal";
+import BulkCreateShowtimeModal from "@/pages/admin/showtimes/components/BulkCreateShowtimeModal";
 import ShowtimeTimeline from "@/pages/admin/showtimes/components/ShowtimeTimeline";
 import Button from "@/components/ui/Button";
+import Pagination from "@/components/shared/Pagination";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import Toast from "@/components/ui/Toast";
 import useLanguage from "@/features/i18n/hooks/useLanguage";
@@ -14,6 +16,7 @@ function ShowtimeManagementPage() {
     loading,
     fetchError,
     isFormOpen,
+    isBulkFormOpen,
     formMode,
     editingShowtime,
     deletingId,
@@ -21,9 +24,13 @@ function ShowtimeManagementPage() {
     toast,
     scheduledCount,
     activeCount,
+    totalItems,
+    currentPage,
+    totalPages,
     cinemas,
     rooms,
     roomsLoading,
+    timelineLoading,
     selectedDate,
     selectedCinemaId,
     selectedRoomId,
@@ -42,11 +49,19 @@ function ShowtimeManagementPage() {
     handleTimelineDateChange,
     handleTimelineCinemaChange,
     handleTimelineRoomChange,
+    handleOpenBulkCreate,
+    handleCloseBulkCreate,
+    handleBulkCreateSuccess,
+    handlePagePrev,
+    handlePageNext,
   } = useShowtimeManagement(tx);
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-end gap-3">
+        <Button variant="secondary" onClick={handleOpenBulkCreate}>
+          {tx("Bulk Create", "Tạo hàng loạt")}
+        </Button>
         <Button onClick={handleOpenCreateForm}>
           {tx("Add showtime", "Thêm lịch chiếu")}
         </Button>
@@ -57,7 +72,7 @@ function ShowtimeManagementPage() {
           <p className="section-label mb-1">
             {tx("Total Showtimes", "Tổng lịch chiếu")}
           </p>
-          <p className="movie-title text-xl">{showtimes.length}</p>
+          <p className="movie-title text-xl">{totalItems}</p>
         </article>
         <article className="surface-card p-3">
           <p className="section-label mb-1">{tx("Scheduled", "Đã lên lịch")}</p>
@@ -75,10 +90,12 @@ function ShowtimeManagementPage() {
             {tx("Calendar / Timeline", "Calendar / Timeline (Gantt)")}
           </p>
           <p className="text-xs text-stone">
-            {tx(
-              `Rooms: ${timelineRoomCount} · Showtimes: ${timelineBusyCount}`,
-              `Phòng: ${timelineRoomCount} · Suất chiếu: ${timelineBusyCount}`,
-            )}
+            {timelineLoading
+              ? tx("Loading timeline...", "Đang tải timeline...")
+              : tx(
+                  `Rooms: ${timelineRoomCount} · Showtimes: ${timelineBusyCount}`,
+                  `Phòng: ${timelineRoomCount} · Suất chiếu: ${timelineBusyCount}`,
+                )}
           </p>
         </div>
 
@@ -108,7 +125,14 @@ function ShowtimeManagementPage() {
             <p className="text-xs text-stone">
               {tx("Loading...", "Đang tải...")}
             </p>
-          ) : null}
+          ) : (
+            <p className="text-xs text-stone">
+              {tx(
+                `Showing page ${currentPage} of ${totalPages} (${totalItems} total)`,
+                `Trang ${currentPage} / ${totalPages} (${totalItems} suất chiếu)`,
+              )}
+            </p>
+          )}
         </div>
 
         {fetchError ? <p className="text-sm text-rose">{fetchError}</p> : null}
@@ -125,6 +149,17 @@ function ShowtimeManagementPage() {
             onDelete={handleRequestDelete}
           />
         )}
+
+        {totalPages > 1 ? (
+          <div className="flex justify-center pt-2">
+            <Pagination
+              page={currentPage}
+              totalPages={totalPages}
+              onPrev={handlePagePrev}
+              onNext={handlePageNext}
+            />
+          </div>
+        ) : null}
       </section>
 
       {isFormOpen ? (
@@ -134,6 +169,14 @@ function ShowtimeManagementPage() {
           showtime={editingShowtime}
           onClose={handleCloseForm}
           onSubmit={handleSubmitShowtime}
+        />
+      ) : null}
+
+      {isBulkFormOpen ? (
+        <BulkCreateShowtimeModal
+          open={isBulkFormOpen}
+          onClose={handleCloseBulkCreate}
+          onSuccess={handleBulkCreateSuccess}
         />
       ) : null}
 

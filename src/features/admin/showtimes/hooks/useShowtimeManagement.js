@@ -12,13 +12,23 @@ import {
 } from "@/features/admin/showtimes/utils/showtimeUtils";
 import { getErrorMessage } from "@/core/utils/errorUtils";
 
+const TABLE_PAGE_SIZE = 8;
+
 /**
  * @param {(en: string, vi: string) => string} tx
  */
 function useShowtimeManagement(tx) {
+  // ── Table data (paginated) ──
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  // ── Timeline data (separate, loaded by cinema) ──
+  const [timelineShowtimes, setTimelineShowtimes] = useState([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
@@ -26,6 +36,8 @@ function useShowtimeManagement(tx) {
 
   const [deletingId, setDeletingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const [isBulkFormOpen, setIsBulkFormOpen] = useState(false);
 
   const [toast, setToast] = useState({
     visible: false,
@@ -56,20 +68,55 @@ function useShowtimeManagement(tx) {
     return () => window.clearTimeout(id);
   }, [toast.visible]);
 
-  const loadShowtimes = useCallback(async () => {
+  // ── Table: paginated load ──
+  const loadShowtimes = useCallback(async (page = 1) => {
     setLoading(true);
     setFetchError("");
     try {
-      const result = await showtimeService.getShowtimes({ page: 1, pageSize: 1000 });
+      const result = await showtimeService.getShowtimes({
+        page,
+        pageSize: TABLE_PAGE_SIZE,
+      });
       const list = (result.data ?? [])
         .map(normalizeShowtime)
         .filter((s) => s && !Number.isNaN(s.id));
       setShowtimes(list);
+
+      const pag = result.pagination;
+      if (pag) {
+        setCurrentPage(Number(pag.page) || 1);
+        setTotalPages(Number(pag.totalPages) || 1);
+        setTotalItems(Number(pag.totalItems) || 0);
+      }
     } catch (error) {
       setShowtimes([]);
       setFetchError(getErrorMessage(error, "Unable to load showtimes."));
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  // ── Timeline: load by cinema (all showtimes for that cinema) ──
+  const loadTimelineData = useCallback(async (cinemaId) => {
+    if (!cinemaId) {
+      setTimelineShowtimes([]);
+      return;
+    }
+    setTimelineLoading(true);
+    try {
+      const result = await showtimeService.getShowtimesByCinema(cinemaId);
+      // API returns data grouped by date: { "2026-05-29": [...], ... }
+      // Flatten into a single array and normalize
+      const grouped = result.data ?? {};
+      const flat = Object.values(grouped).flat();
+      const normalized = flat
+        .map(normalizeShowtime)
+        .filter((s) => s && !Number.isNaN(s.id));
+      setTimelineShowtimes(normalized);
+    } catch {
+      setTimelineShowtimes([]);
+    } finally {
+      setTimelineLoading(false);
     }
   }, []);
 
@@ -89,8 +136,9 @@ function useShowtimeManagement(tx) {
     }
   }, []);
 
+  // Initial load
   useEffect(() => {
-    const id = window.setTimeout(() => loadShowtimes(), 0);
+    const id = window.setTimeout(() => loadShowtimes(1), 0);
     return () => window.clearTimeout(id);
   }, [loadShowtimes]);
 
@@ -99,12 +147,14 @@ function useShowtimeManagement(tx) {
     return () => window.clearTimeout(id);
   }, [loadCinemasForTimeline]);
 
+  // Load rooms + timeline data when cinema changes
   useEffect(() => {
     let cancelled = false;
 
     if (!selectedCinemaId) {
       setRooms([]);
       setSelectedRoomId("");
+      setTimelineShowtimes([]);
       return undefined;
     }
 
@@ -112,8 +162,11 @@ function useShowtimeManagement(tx) {
 
     (async () => {
       try {
+        console.log("Fetching rooms for cinemaId:", selectedCinemaId);
         const result = await showtimeService.getRoomsByCinema(selectedCinemaId);
+        console.log("getRoomsByCinema result:", result);
         const list = result.data ?? [];
+        console.log("Extracted rooms list:", list);
 
         if (cancelled) return;
         setRooms(list);
@@ -125,7 +178,8 @@ function useShowtimeManagement(tx) {
           );
           return exists ? current : "";
         });
-      } catch {
+      } catch (err) {
+        console.error("getRoomsByCinema error:", err);
         if (!cancelled) {
           setRooms([]);
           setSelectedRoomId("");
@@ -135,11 +189,24 @@ function useShowtimeManagement(tx) {
       }
     })();
 
+    // Also load timeline data for this cinema
+    loadTimelineData(selectedCinemaId);
+
     return () => {
       cancelled = true;
     };
-  }, [selectedCinemaId]);
+  }, [selectedCinemaId, loadTimelineData]);
 
+  // ── Pagination handlers ──
+  const handlePagePrev = useCallback(() => {
+    if (currentPage > 1) loadShowtimes(currentPage - 1);
+  }, [currentPage, loadShowtimes]);
+
+  const handlePageNext = useCallback(() => {
+    if (currentPage < totalPages) loadShowtimes(currentPage + 1);
+  }, [currentPage, totalPages, loadShowtimes]);
+
+  // ── Form handlers ──
   const handleOpenCreateForm = () => {
     setFormMode("create");
     setEditingShowtime(null);
@@ -155,6 +222,26 @@ function useShowtimeManagement(tx) {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingShowtime(null);
+  };
+
+  const handleOpenBulkCreate = () => {
+    setIsBulkFormOpen(true);
+  };
+
+  const handleCloseBulkCreate = () => {
+    setIsBulkFormOpen(false);
+  };
+
+  const handleBulkCreateSuccess = () => {
+    loadShowtimes(currentPage);
+    if (selectedCinemaId) loadTimelineData(selectedCinemaId);
+    showToast(
+      tx(
+        "Bulk showtimes created successfully.",
+        "Tạo hàng loạt lịch chiếu thành công.",
+      ),
+      "success",
+    );
   };
 
   const handleSubmitShowtime = async (values) => {
@@ -175,7 +262,8 @@ function useShowtimeManagement(tx) {
           "success",
         );
       }
-      await loadShowtimes();
+      await loadShowtimes(currentPage);
+      if (selectedCinemaId) loadTimelineData(selectedCinemaId);
       return { ok: true };
     } catch (error) {
       return {
@@ -202,7 +290,8 @@ function useShowtimeManagement(tx) {
         tx("Showtime deleted successfully.", "Xóa lịch chiếu thành công."),
         "success",
       );
-      await loadShowtimes();
+      await loadShowtimes(currentPage);
+      if (selectedCinemaId) loadTimelineData(selectedCinemaId);
     } catch (error) {
       showToast(getErrorMessage(error, "Failed to delete showtime."), "error");
     } finally {
@@ -211,6 +300,7 @@ function useShowtimeManagement(tx) {
     }
   };
 
+  // ── Timeline filter handlers ──
   const handleTimelineDateChange = useCallback((event) => {
     const next = event.target.value;
     setSelectedDate(next || getTodayDateKey());
@@ -225,10 +315,11 @@ function useShowtimeManagement(tx) {
     setSelectedRoomId(event.target.value);
   }, []);
 
+  // ── Timeline rows (built from timeline-specific data) ──
   const timelineRows = useMemo(
     () =>
       buildTimelineRows({
-        showtimes,
+        showtimes: timelineShowtimes,
         rooms,
         selectedDate,
         selectedCinemaId,
@@ -237,7 +328,7 @@ function useShowtimeManagement(tx) {
         endHour: timelineEndHour,
       }),
     [
-      showtimes,
+      timelineShowtimes,
       rooms,
       selectedDate,
       selectedCinemaId,
@@ -254,6 +345,7 @@ function useShowtimeManagement(tx) {
 
   const timelineRoomCount = timelineRows.length;
 
+  // ── Stats (from current page data) ──
   const scheduledCount = useMemo(
     () =>
       showtimes.filter((s) => s.status === SHOWTIME_STATUS.SCHEDULED).length,
@@ -270,6 +362,7 @@ function useShowtimeManagement(tx) {
     loading,
     fetchError,
     isFormOpen,
+    isBulkFormOpen,
     formMode,
     editingShowtime,
     deletingId,
@@ -277,9 +370,13 @@ function useShowtimeManagement(tx) {
     toast,
     scheduledCount,
     activeCount,
+    totalItems,
+    currentPage,
+    totalPages,
     cinemas,
     rooms,
     roomsLoading,
+    timelineLoading,
     selectedDate,
     selectedCinemaId,
     selectedRoomId,
@@ -298,6 +395,11 @@ function useShowtimeManagement(tx) {
     handleTimelineDateChange,
     handleTimelineCinemaChange,
     handleTimelineRoomChange,
+    handleOpenBulkCreate,
+    handleCloseBulkCreate,
+    handleBulkCreateSuccess,
+    handlePagePrev,
+    handlePageNext,
   };
 }
 

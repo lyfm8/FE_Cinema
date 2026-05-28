@@ -30,6 +30,14 @@ export class ShowtimeService {
     return this.showtimeRepository.deleteShowtime(id);
   }
 
+  bulkCreateShowtime(payload) {
+    return this.showtimeRepository.bulkCreateShowtime(payload);
+  }
+
+  getShowtimesByCinema(cinemaId) {
+    return this.showtimeRepository.getShowtimesByCinema(cinemaId);
+  }
+
   getCinemas(params) {
     return this.showtimeRepository.getCinemas(params);
   }
