@@ -29,7 +29,17 @@ export class ShowtimeApiRepository {
     return apiClient.delete(`/showtimes/${id}`);
   }
 
+  /** @param {Object} payload — BulkCreateShowtimeDto */
+  bulkCreateShowtime(payload) {
+    return apiClient.post('/showtimes/bulk', payload);
+  }
+
   // ── Supporting lookups ──
+
+  /** @param {number|string} cinemaId — load all showtimes for a cinema (for timeline) */
+  getShowtimesByCinema(cinemaId) {
+    return apiClient.get(`/showtimes/by-cinema/${cinemaId}`);
+  }
 
   /** @param {Object} [params] */
   getCinemas(params = {}) {
