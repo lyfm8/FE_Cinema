@@ -1,4 +1,4 @@
-import { apiClient } from '@/core/api/apiClient';
+import { apiClient } from "@/core/api/apiClient";
 
 /**
  * Repository handling public-facing movie & showtime API calls.
@@ -6,7 +6,7 @@ import { apiClient } from '@/core/api/apiClient';
 export class PublicMovieApiRepository {
   /** @param {Object} [params] */
   getMovies(params = {}) {
-    return apiClient.get('/movies/get-all-movies', { params });
+    return apiClient.get("/movies/get-all-movies", { params });
   }
 
   /** @param {number|string} id */
@@ -17,5 +17,10 @@ export class PublicMovieApiRepository {
   /** @param {number|string} movieId */
   getShowtimesByMovieId(movieId) {
     return apiClient.get(`/showtimes/by-movie/${movieId}`);
+  }
+
+  /** @param {number|string} showtimeId */
+  getShowtimeById(showtimeId) {
+    return apiClient.get(`/showtimes/${showtimeId}`);
   }
 }

@@ -1,4 +1,4 @@
-import { PublicMovieApiRepository } from '../repositories/movieApi.repository';
+import { PublicMovieApiRepository } from "../repositories/movieApi.repository";
 
 /**
  * Public movie service — business logic layer for public-facing pages.
@@ -20,6 +20,10 @@ export class PublicMovieService {
 
   getShowtimesByMovieId(movieId) {
     return this.movieRepository.getShowtimesByMovieId(movieId);
+  }
+
+  getShowtimeById(showtimeId) {
+    return this.movieRepository.getShowtimeById(showtimeId);
   }
 }
 

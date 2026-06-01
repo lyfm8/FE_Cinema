@@ -185,7 +185,7 @@ function BulkCreateShowtimeModal({ open, onClose, onSuccess }) {
               </option>
               {rooms.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.name}
+                  {`${r.name} (${r.roomType || "UNKNOWN"})`}
                 </option>
               ))}
             </select>
