@@ -34,7 +34,6 @@ export class ShowtimeApiRepository {
     return apiClient.post('/showtimes/bulk', payload);
   }
 
-  // ── Supporting lookups ──
 
   /** @param {number|string} cinemaId — load all showtimes for a cinema (for timeline) */
   getShowtimesByCinema(cinemaId) {
