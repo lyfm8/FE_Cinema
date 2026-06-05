@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useBooking from '@/features/booking/hooks/useBooking';
 import { confirmPayment } from '@/features/booking/services/paymentService';
 
@@ -8,7 +8,9 @@ import { confirmPayment } from '@/features/booking/services/paymentService';
  */
 function usePaymentPage(tx) {
   const navigate = useNavigate();
-  const { selectedSeats } = useBooking();
+  const location = useLocation();
+  const { selectedSeats, resetBooking } = useBooking();
+  const bookingId = location.state?.bookingId;
   const [method, setMethod] = useState('CARD');
   const [customerName, setCustomerName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,15 +24,19 @@ function usePaymentPage(tx) {
     setError('');
 
     try {
+      if (!bookingId) {
+        throw new Error('No booking ID found. Please start booking again.');
+      }
+
       await confirmPayment({
+        bookingId: Number(bookingId),
         method,
-        customerName,
-        seats: selectedSeats,
       });
 
+      resetBooking();
       navigate('/booking/confirmation');
     } catch (requestError) {
-      setError(requestError?.response?.data?.message ?? tx('Payment failed.', 'Thanh toán thất bại.'));
+      setError(requestError?.response?.data?.message ?? tx('Booking failed.', 'Đặt vé thất bại.'));
     } finally {
       setLoading(false);
     }

@@ -1,12 +1,5 @@
 import { Fragment, useMemo } from "react";
 
-const ROOM_LAYOUTS = {
-  standard: { rows: 8, columns: 10 },
-  vip: { rows: 4, columns: 10 },
-  imax: { rows: 10, columns: 12 },
-  couple: { rows: 2, columns: 10 },
-};
-
 const ROOM_THEMES = {
   standard: {
     caption: "STANDARD HALL",
@@ -181,11 +174,16 @@ function SeatMap({
   const normalizedFormat = String(format ?? "").toUpperCase();
   const enableCurvedRows =
     normalizedType === "imax" && !normalizedFormat.includes("2D");
-  const defaultLayout = ROOM_LAYOUTS[normalizedType] || ROOM_LAYOUTS.standard;
   const theme = ROOM_THEMES[normalizedType] || ROOM_THEMES.standard;
+  const normalizedSeats = Array.isArray(seats) ? seats : [];
+  const derivedRows = new Set(normalizedSeats.map((seat) => seat.row).filter(Boolean)).size;
+  const derivedColumns = Math.max(
+    ...normalizedSeats.map((seat) => Number(seat.column) || 0),
+    0,
+  );
 
-  const safeRows = Number(rows) > 0 ? Number(rows) : defaultLayout.rows;
-  const safeColumns = Number(columns) > 0 ? Number(columns) : defaultLayout.columns;
+  const safeRows = Number(rows) > 0 ? Number(rows) : derivedRows;
+  const safeColumns = Number(columns) > 0 ? Number(columns) : derivedColumns;
 
   const rowLabels = useMemo(
     () =>
@@ -202,11 +200,11 @@ function SeatMap({
 
   const seatLookup = useMemo(() => {
     const map = new Map();
-    (seats || []).forEach((seat) => {
+    normalizedSeats.forEach((seat) => {
       map.set(`${seat.row}-${seat.column}`, seat);
     });
     return map;
-  }, [seats]);
+  }, [normalizedSeats]);
 
   const selectedSeatSet = useMemo(
     () => new Set((selectedSeatIds || []).map((seatId) => String(seatId))),
@@ -256,13 +254,19 @@ function SeatMap({
         </div>
       </div>
 
+      {safeRows === 0 || safeColumns === 0 ? (
+        <div className="rounded-xl border border-slate-200 bg-white/80 p-8 text-center text-sm font-medium text-slate-500">
+          Seat map data is unavailable.
+        </div>
+      ) : null}
+
       <div className="mx-auto mb-16 w-full max-w-[760px] md:mb-20">
         <div className={`h-2 rounded-t-[999px] ${theme.screenArcClass} ${theme.screenGlowClass}`} />
         <div className="h-2 rounded-b-[999px] bg-white/85" />
         <p className="mt-2 text-center text-base tracking-[0.45em] text-slate-500">MÀN HÌNH</p>
       </div>
 
-      <div className="overflow-x-auto">
+      {safeRows > 0 && safeColumns > 0 ? <div className="overflow-x-auto">
         <div className="mx-auto w-max min-w-full space-y-2">
           {rowLabels.map((rowLabel, rowIndex) => {
             const rowStyle = enableCurvedRows
@@ -330,7 +334,7 @@ function SeatMap({
             );
           })}
         </div>
-      </div>
+      </div> : null}
     </div>
   );
 }

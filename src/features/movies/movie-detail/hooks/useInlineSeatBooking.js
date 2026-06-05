@@ -2,19 +2,13 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useBooking from "@/features/booking/hooks/useBooking";
 import { publicMovieService } from "@/features/movies/services/movieService";
+import { holdSeats, createBooking } from "@/features/booking/services/bookingService";
 
 const ROOM_PRICES = {
   standard: 75000,
   vip: 120000,
   imax: 150000,
   couple: 200000,
-};
-
-const ROOM_LAYOUTS = {
-  standard: { rows: 8, columns: 10 },
-  vip: { rows: 4, columns: 10 },
-  imax: { rows: 10, columns: 12 },
-  couple: { rows: 2, columns: 10 },
 };
 
 function normalizeRoomType(value) {
@@ -54,27 +48,6 @@ function toSeatLabel(row, column) {
   return `${row}${column}`;
 }
 
-function buildFallbackSeats(rows, columns, isCouple) {
-  const generated = [];
-
-  for (let rowIndex = 0; rowIndex < rows; rowIndex += 1) {
-    const rowLabel = String.fromCharCode(65 + rowIndex);
-    for (let column = 1; column <= columns; column += 1) {
-      const seatId = `${rowLabel}${column}`;
-      generated.push({
-        seatId,
-        row: rowLabel,
-        column,
-        status: "available",
-        isCouple,
-        label: toSeatLabel(rowLabel, column),
-      });
-    }
-  }
-
-  return generated;
-}
-
 function normalizeSeat(rawSeat, defaultIsCouple) {
   if (!rawSeat) return null;
 
@@ -100,18 +73,16 @@ function normalizeShowtimeDetail(rawShowtime) {
   const roomType = normalizeRoomType(
     rawShowtime?.roomType ?? rawShowtime?.room?.roomType,
   );
-  const defaultLayout = ROOM_LAYOUTS[roomType] || ROOM_LAYOUTS.standard;
 
   const rows =
     Number(
-      rawShowtime?.rows ?? rawShowtime?.room?.rows ?? defaultLayout.rows,
-    ) || defaultLayout.rows;
+      rawShowtime?.rows ?? rawShowtime?.room?.rows,
+    ) || 0;
   const columns =
     Number(
       rawShowtime?.columns ??
-        rawShowtime?.room?.columns ??
-        defaultLayout.columns,
-    ) || defaultLayout.columns;
+        rawShowtime?.room?.columns,
+    ) || 0;
   const isCouple =
     Boolean(rawShowtime?.room?.isCouple) || roomType === "couple";
 
@@ -121,13 +92,9 @@ function normalizeShowtimeDetail(rawShowtime) {
       ? rawShowtime.room.seats
       : [];
 
-  let seats = rawSeats
+  const seats = rawSeats
     .map((seat) => normalizeSeat(seat, isCouple))
     .filter(Boolean);
-
-  if (seats.length === 0) {
-    seats = buildFallbackSeats(rows, columns, isCouple);
-  }
 
   seats.sort((a, b) => a.row.localeCompare(b.row) || a.column - b.column);
 
@@ -211,9 +178,33 @@ function useInlineSeatBooking() {
     resetBooking();
   };
 
-  const handleBookTickets = () => {
-    if (selectedSeatObjects.length === 0) return;
-    navigate("/booking/payment");
+  const handleBookTickets = async () => {
+    if (selectedSeatObjects.length === 0 || !activeShowtime?.id) return;
+
+    const isConfirm = window.confirm("Xác nhận tạo đơn đặt vé?");
+    if (!isConfirm) return;
+
+    try {
+      const seatIds = selectedSeatObjects.map(s => Number(s.seatId) || s.seatId);
+      
+      // Bắt buộc phải hold ghế trong Redis trước khi tạo đơn
+      await holdSeats({
+        showtimeId: activeShowtime.id,
+        seatIds,
+      });
+
+      // Sau đó gọi API tạo Booking
+      const response = await createBooking({
+        showtimeId: activeShowtime.id,
+        seatIds,
+      });
+
+      // Bỏ qua resetBooking để giữ giao diện, chuyển sang trang Thanh toán cùng bookingId
+      navigate("/booking/payment", { state: { bookingId: response.data.id } });
+    } catch (err) {
+      console.error("Failed to create booking:", err);
+      alert(err?.response?.data?.message || "Không thể đặt vé. Vui lòng thử lại!");
+    }
   };
 
   return {
