@@ -28,7 +28,7 @@ function MovieCard({ movie }) {
 
         {/* Hover Overlay with Buttons */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-galaxyBlue/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-sm">
-          <Link to={`/booking/${movie.id}/seats`} className="w-3/4 text-center rounded bg-galaxyOrange px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-galaxyOrangeHover shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+          <Link to={`/movies/${movie.id}#showtimes`} className="w-3/4 text-center rounded bg-galaxyOrange px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-galaxyOrangeHover shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
             {tx('Buy Ticket', 'Mua Vé')}
           </Link>
           <Link to={`/movies/${movie.id}`} className="w-3/4 text-center rounded border-2 border-white px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-white hover:text-galaxyBlue shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">

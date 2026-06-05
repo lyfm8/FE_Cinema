@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import MovieInfo from "@/pages/movies/movie-detail/components/MovieInfo";
 import ShowtimeList from "@/pages/movies/movie-detail/components/ShowtimeList";
@@ -36,6 +36,17 @@ function MovieDetailPage() {
     handleBookTickets,
   } = useInlineSeatBooking();
 
+  useEffect(() => {
+    if (window.location.hash === "#showtimes" && !loadingMovie && !loadingShowtimes) {
+      setTimeout(() => {
+        const el = document.getElementById("showtimes");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, [loadingMovie, loadingShowtimes]);
+
   if (loadingMovie) {
     return (
       <div className="page-container py-12 text-center text-sm font-medium text-stone">
@@ -71,7 +82,8 @@ function MovieDetailPage() {
       <div className="flex flex-col gap-8">
         <MovieInfo movie={movie} onOpenTrailer={() => setOpenTrailer(true)} />
 
-        {activeShowtime ? (
+        <div id="showtimes">
+          {activeShowtime ? (
           <InlineSeatBooking
             showtime={activeShowtime}
             showtimeDetail={showtimeDetail}
@@ -93,6 +105,7 @@ function MovieDetailPage() {
             onSelectShowtime={selectShowtime}
           />
         )}
+        </div>
       </div>
 
       <TrailerModal

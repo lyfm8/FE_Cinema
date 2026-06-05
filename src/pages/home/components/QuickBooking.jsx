@@ -10,7 +10,7 @@ function QuickBooking({ movies = [] }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (selectedMovieId) {
-      navigate(`/booking/${selectedMovieId}/seats`);
+      navigate(`/movies/${selectedMovieId}#showtimes`);
     }
   };
 

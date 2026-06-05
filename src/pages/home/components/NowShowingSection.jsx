@@ -34,7 +34,7 @@ function MovieHomeCard({ movie }) {
         {/* Hover Overlay with Buttons */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#034ea2]/70 opacity-0 transition-all duration-300 group-hover:opacity-100 backdrop-blur-sm">
           <Link
-            to={`/booking/${movie.id}/seats`}
+            to={`/movies/${movie.id}#showtimes`}
             className="w-3/4 text-center rounded-lg bg-[#f26b38] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#fb9440] shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300"
           >
             {tx('Buy Ticket', 'Mua Vé')}

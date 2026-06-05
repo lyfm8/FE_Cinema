@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import Spinner from "@/components/ui/Spinner";
 import useLanguage from "@/features/i18n/hooks/useLanguage";
 
@@ -21,18 +22,66 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
   const { tx } = useLanguage();
   const safeShowtimes =
     typeof showtimes === "object" && !Array.isArray(showtimes) ? showtimes : {};
-  const totalSessions = countTotalSessions(safeShowtimes);
-  const days = Object.keys(safeShowtimes);
+    
+  // Extract all unique cinemas
+  const cinemas = useMemo(() => {
+    const map = new Map();
+    Object.values(safeShowtimes).flat().forEach(st => {
+      if (st.room?.cinema) {
+        map.set(st.room.cinema.id, st.room.cinema);
+      }
+    });
+    return Array.from(map.values());
+  }, [safeShowtimes]);
+
+  const [selectedCinemaId, setSelectedCinemaId] = useState("");
+
+  // Auto-select first cinema if not selected
+  useMemo(() => {
+    if (cinemas.length > 0 && !selectedCinemaId) {
+      setSelectedCinemaId(String(cinemas[0].id));
+    }
+  }, [cinemas, selectedCinemaId]);
+
+  // Filter showtimes by selected cinema
+  const filteredShowtimes = useMemo(() => {
+    if (!selectedCinemaId) return {};
+    const filtered = {};
+    Object.keys(safeShowtimes).forEach(day => {
+      const slots = safeShowtimes[day].filter(st => String(st.room?.cinemaId || st.room?.cinema?.id) === selectedCinemaId);
+      if (slots.length > 0) {
+        filtered[day] = slots;
+      }
+    });
+    return filtered;
+  }, [safeShowtimes, selectedCinemaId]);
+
+  const totalSessions = countTotalSessions(filteredShowtimes);
+  const days = Object.keys(filteredShowtimes);
 
   return (
     <section className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-      <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-3">
-        <h3 className="text-xl font-bold uppercase tracking-wider text-galaxyBlue">
-          {tx("Showtimes", "Lịch chiếu")}
-        </h3>
-        <span className="rounded bg-galaxyBg px-3 py-1 text-xs font-bold text-galaxyOrange shadow-sm">
-          {tx(`${totalSessions} sessions`, `${totalSessions} suất`)}
-        </span>
+      <div className="mb-6 flex flex-col gap-4 border-b border-gray-100 pb-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-bold uppercase tracking-wider text-galaxyBlue">
+            {tx("Showtimes", "Lịch chiếu")}
+          </h3>
+          <span className="rounded bg-galaxyBg px-3 py-1 text-xs font-bold text-galaxyOrange shadow-sm">
+            {tx(`${totalSessions} sessions`, `${totalSessions} suất`)}
+          </span>
+        </div>
+
+        {cinemas.length > 0 && (
+          <select 
+            className="rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm font-medium text-ink shadow-sm focus:border-galaxyBlue focus:outline-none focus:ring-1 focus:ring-galaxyBlue"
+            value={selectedCinemaId}
+            onChange={(e) => setSelectedCinemaId(e.target.value)}
+          >
+            {cinemas.map(c => (
+              <option key={c.id} value={String(c.id)}>{c.name}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {loading ? (
@@ -71,14 +120,14 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
                   </p>
                   <span className="ml-auto text-xs font-medium text-stone">
                     {tx(
-                      `${safeShowtimes[day].length} slots`,
-                      `${safeShowtimes[day].length} khung giờ`,
+                      `${filteredShowtimes[day].length} slots`,
+                      `${filteredShowtimes[day].length} khung giờ`,
                     )}
                   </span>
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  {safeShowtimes[day].map((showtime) => {
+                  {filteredShowtimes[day].map((showtime) => {
                     const startTime = new Date(
                       showtime.movieStartTime || showtime.publicStartTime,
                     );
