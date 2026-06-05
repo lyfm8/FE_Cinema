@@ -15,8 +15,14 @@ export async function holdSeats(payload) {
   return response.data;
 }
 
+export async function getBookedSeatsForShowtime(showtimeId) {
+  const response = await axiosInstance.get(`/bookings/showtime/${showtimeId}/seats`);
+  return response.data;
+}
+
 export default {
   createBooking,
   getMyBookings,
   holdSeats,
+  getBookedSeatsForShowtime,
 };

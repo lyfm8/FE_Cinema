@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useBooking from "@/features/booking/hooks/useBooking";
 import { publicMovieService } from "@/features/movies/services/movieService";
-import { holdSeats, createBooking } from "@/features/booking/services/bookingService";
+import { holdSeats, createBooking, getBookedSeatsForShowtime } from "@/features/booking/services/bookingService";
+import { io } from "socket.io-client";
 
 const ROOM_PRICES = {
   standard: 75000,
@@ -153,8 +154,23 @@ function useInlineSeatBooking() {
     setShowtime(String(showtime.id));
 
     try {
-      const response = await publicMovieService.getShowtimeById(showtime.id);
+      const [response, bookedResponse] = await Promise.all([
+        publicMovieService.getShowtimeById(showtime.id),
+        getBookedSeatsForShowtime(showtime.id).catch(() => ({ data: { allUnavailableSeatIds: [] } }))
+      ]);
+      
       const normalized = normalizeShowtimeDetail(response?.data || {});
+      const unavailableIds = bookedResponse?.data?.allUnavailableSeatIds || [];
+
+      if (unavailableIds.length > 0 && normalized.seats) {
+        normalized.seats = normalized.seats.map(seat => {
+          if (unavailableIds.includes(Number(seat.seatId))) {
+            return { ...seat, status: 'booked' };
+          }
+          return seat;
+        });
+      }
+
       setShowtimeDetail(normalized);
     } catch (error) {
       console.error("Failed to load showtime seat map:", error);
@@ -164,6 +180,47 @@ function useInlineSeatBooking() {
       setLoadingSeatMap(false);
     }
   };
+
+  // WebSocket setup for realtime seat map updates
+  useEffect(() => {
+    if (!activeShowtime?.id) return;
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/';
+    const socketUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+    
+    const socket = io(`${socketUrl}/seat`, {
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("connect", () => {
+      socket.emit("join-showtime", { showtimeId: activeShowtime.id });
+    });
+
+    socket.on("seat-update", (data) => {
+      const { allUnavailableSeatIds } = data;
+      
+      setShowtimeDetail((prev) => {
+        if (!prev || !prev.seats) return prev;
+        
+        const newSeats = prev.seats.map((seat) => {
+          const isUnavailable = allUnavailableSeatIds.includes(Number(seat.seatId));
+          const newStatus = isUnavailable ? "booked" : "available";
+          
+          if (seat.status !== newStatus && seat.status !== "maintenance") {
+            return { ...seat, status: newStatus };
+          }
+          return seat;
+        });
+
+        return { ...prev, seats: newSeats };
+      });
+    });
+
+    return () => {
+      socket.emit("leave-showtime", { showtimeId: activeShowtime.id });
+      socket.disconnect();
+    };
+  }, [activeShowtime?.id]);
 
   const handleToggleSeat = (seat) => {
     if (!seat || seat.status === "booked") return;
