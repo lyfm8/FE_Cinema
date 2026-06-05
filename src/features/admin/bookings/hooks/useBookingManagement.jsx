@@ -1,10 +1,82 @@
-import { useMemo } from 'react';
-import { mockAdminBookings } from '@/utils/mockData';
+import { useEffect, useMemo, useState } from 'react';
+import { getBookings } from '@/features/admin/bookings/services/bookingService';
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('vi-VN').format(Number(value) || 0);
+}
+
+function formatDateTime(value) {
+  if (!value) return '';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return date.toLocaleString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function formatSeats(booking) {
+  const seatHolds = Array.isArray(booking.seatHolds) ? booking.seatHolds : [];
+  return seatHolds
+    .map((hold) => {
+      const seat = hold.seat;
+      if (seat?.row && (seat?.number || seat?.column)) {
+        return `${seat.row}${seat.number ?? seat.column}`;
+      }
+      return hold.seatId ? `#${hold.seatId}` : '';
+    })
+    .filter(Boolean)
+    .join(', ');
+}
+
+function normalizeBooking(booking) {
+  return {
+    id: booking.bookingCode || booking.id,
+    customer: booking.user?.fullName || booking.staff?.fullName || '',
+    movie: booking.showtime?.movie?.title || '',
+    seats: formatSeats(booking),
+    amount: formatCurrency(booking.totalAmount),
+    status: booking.status || '',
+    createdAt: formatDateTime(booking.createdAt),
+  };
+}
 
 /**
  * @param {(en: string, vi: string) => string} tx
  */
 function useBookingManagement(tx) {
+  const [rows, setRows] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadBookings() {
+      try {
+        const response = await getBookings({ page: 1, pageSize: 100 });
+        const bookings = Array.isArray(response?.data) ? response.data : [];
+        if (isMounted) {
+          setRows(bookings.map(normalizeBooking));
+        }
+      } catch (error) {
+        console.error('Failed to load bookings:', error);
+        if (isMounted) {
+          setRows([]);
+        }
+      }
+    }
+
+    loadBookings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const columns = useMemo(
     () => [
       { key: 'id', label: tx('Booking ID', 'Mã đặt vé') },
@@ -36,18 +108,18 @@ function useBookingManagement(tx) {
     [tx],
   );
 
-  const rows = useMemo(() => mockAdminBookings, []);
-
   const summary = useMemo(() => {
-    const paidOrders = mockAdminBookings.filter((booking) => booking.status === 'PAID').length;
-    const refunds = mockAdminBookings.filter((booking) => booking.status === 'REFUND').length;
+    const paidOrders = rows.filter((booking) => booking.status === 'PAID').length;
+    const refunds = rows.filter((booking) =>
+      ['REFUND', 'REFUNDED', 'CANCELLED'].includes(booking.status),
+    ).length;
 
     return {
-      totalToday: mockAdminBookings.length,
+      totalToday: rows.length,
       paidOrders,
       refunds,
     };
-  }, []);
+  }, [rows]);
 
   return {
     columns,

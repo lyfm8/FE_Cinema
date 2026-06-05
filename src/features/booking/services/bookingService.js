@@ -10,7 +10,19 @@ export async function getMyBookings() {
   return response.data;
 }
 
+export async function holdSeats(payload) {
+  const response = await axiosInstance.post('/bookings/hold-seats', payload);
+  return response.data;
+}
+
+export async function getBookedSeatsForShowtime(showtimeId) {
+  const response = await axiosInstance.get(`/bookings/showtime/${showtimeId}/seats`);
+  return response.data;
+}
+
 export default {
   createBooking,
   getMyBookings,
+  holdSeats,
+  getBookedSeatsForShowtime,
 };

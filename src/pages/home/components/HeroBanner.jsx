@@ -131,7 +131,7 @@ function HeroBanner({ featuredMovies = [] }) {
             {/* CTA Buttons */}
             <div className="flex items-center gap-3 pt-2">
               <Link
-                to={`/booking/${movie.id}/seats`}
+                to={`/movies/${movie.id}#showtimes`}
                 className="group inline-flex items-center gap-2 rounded-lg bg-[#f26b38] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#f26b38]/30 transition-all hover:bg-[#fb9440] hover:shadow-xl hover:-translate-y-0.5"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

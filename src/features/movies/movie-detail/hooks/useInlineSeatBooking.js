@@ -1,20 +1,15 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useBooking from "@/features/booking/hooks/useBooking";
 import { publicMovieService } from "@/features/movies/services/movieService";
+import { holdSeats, createBooking, getBookedSeatsForShowtime } from "@/features/booking/services/bookingService";
+import { io } from "socket.io-client";
 
 const ROOM_PRICES = {
   standard: 75000,
   vip: 120000,
   imax: 150000,
   couple: 200000,
-};
-
-const ROOM_LAYOUTS = {
-  standard: { rows: 8, columns: 10 },
-  vip: { rows: 4, columns: 10 },
-  imax: { rows: 10, columns: 12 },
-  couple: { rows: 2, columns: 10 },
 };
 
 function normalizeRoomType(value) {
@@ -54,27 +49,6 @@ function toSeatLabel(row, column) {
   return `${row}${column}`;
 }
 
-function buildFallbackSeats(rows, columns, isCouple) {
-  const generated = [];
-
-  for (let rowIndex = 0; rowIndex < rows; rowIndex += 1) {
-    const rowLabel = String.fromCharCode(65 + rowIndex);
-    for (let column = 1; column <= columns; column += 1) {
-      const seatId = `${rowLabel}${column}`;
-      generated.push({
-        seatId,
-        row: rowLabel,
-        column,
-        status: "available",
-        isCouple,
-        label: toSeatLabel(rowLabel, column),
-      });
-    }
-  }
-
-  return generated;
-}
-
 function normalizeSeat(rawSeat, defaultIsCouple) {
   if (!rawSeat) return null;
 
@@ -100,18 +74,16 @@ function normalizeShowtimeDetail(rawShowtime) {
   const roomType = normalizeRoomType(
     rawShowtime?.roomType ?? rawShowtime?.room?.roomType,
   );
-  const defaultLayout = ROOM_LAYOUTS[roomType] || ROOM_LAYOUTS.standard;
 
   const rows =
     Number(
-      rawShowtime?.rows ?? rawShowtime?.room?.rows ?? defaultLayout.rows,
-    ) || defaultLayout.rows;
+      rawShowtime?.rows ?? rawShowtime?.room?.rows,
+    ) || 0;
   const columns =
     Number(
       rawShowtime?.columns ??
-        rawShowtime?.room?.columns ??
-        defaultLayout.columns,
-    ) || defaultLayout.columns;
+        rawShowtime?.room?.columns,
+    ) || 0;
   const isCouple =
     Boolean(rawShowtime?.room?.isCouple) || roomType === "couple";
 
@@ -121,13 +93,9 @@ function normalizeShowtimeDetail(rawShowtime) {
       ? rawShowtime.room.seats
       : [];
 
-  let seats = rawSeats
+  const seats = rawSeats
     .map((seat) => normalizeSeat(seat, isCouple))
     .filter(Boolean);
-
-  if (seats.length === 0) {
-    seats = buildFallbackSeats(rows, columns, isCouple);
-  }
 
   seats.sort((a, b) => a.row.localeCompare(b.row) || a.column - b.column);
 
@@ -186,8 +154,23 @@ function useInlineSeatBooking() {
     setShowtime(String(showtime.id));
 
     try {
-      const response = await publicMovieService.getShowtimeById(showtime.id);
+      const [response, bookedResponse] = await Promise.all([
+        publicMovieService.getShowtimeById(showtime.id),
+        getBookedSeatsForShowtime(showtime.id).catch(() => ({ data: { allUnavailableSeatIds: [] } }))
+      ]);
+      
       const normalized = normalizeShowtimeDetail(response?.data || {});
+      const unavailableIds = bookedResponse?.data?.allUnavailableSeatIds || [];
+
+      if (unavailableIds.length > 0 && normalized.seats) {
+        normalized.seats = normalized.seats.map(seat => {
+          if (unavailableIds.includes(Number(seat.seatId))) {
+            return { ...seat, status: 'booked' };
+          }
+          return seat;
+        });
+      }
+
       setShowtimeDetail(normalized);
     } catch (error) {
       console.error("Failed to load showtime seat map:", error);
@@ -197,6 +180,47 @@ function useInlineSeatBooking() {
       setLoadingSeatMap(false);
     }
   };
+
+  // WebSocket setup for realtime seat map updates
+  useEffect(() => {
+    if (!activeShowtime?.id) return;
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/';
+    const socketUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+    
+    const socket = io(`${socketUrl}/seat`, {
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("connect", () => {
+      socket.emit("join-showtime", { showtimeId: activeShowtime.id });
+    });
+
+    socket.on("seat-update", (data) => {
+      const { allUnavailableSeatIds } = data;
+      
+      setShowtimeDetail((prev) => {
+        if (!prev || !prev.seats) return prev;
+        
+        const newSeats = prev.seats.map((seat) => {
+          const isUnavailable = allUnavailableSeatIds.includes(Number(seat.seatId));
+          const newStatus = isUnavailable ? "booked" : "available";
+          
+          if (seat.status !== newStatus && seat.status !== "maintenance") {
+            return { ...seat, status: newStatus };
+          }
+          return seat;
+        });
+
+        return { ...prev, seats: newSeats };
+      });
+    });
+
+    return () => {
+      socket.emit("leave-showtime", { showtimeId: activeShowtime.id });
+      socket.disconnect();
+    };
+  }, [activeShowtime?.id]);
 
   const handleToggleSeat = (seat) => {
     if (!seat || seat.status === "booked") return;
@@ -211,9 +235,33 @@ function useInlineSeatBooking() {
     resetBooking();
   };
 
-  const handleBookTickets = () => {
-    if (selectedSeatObjects.length === 0) return;
-    navigate("/booking/payment");
+  const handleBookTickets = async () => {
+    if (selectedSeatObjects.length === 0 || !activeShowtime?.id) return;
+
+    const isConfirm = window.confirm("Xác nhận tạo đơn đặt vé?");
+    if (!isConfirm) return;
+
+    try {
+      const seatIds = selectedSeatObjects.map(s => Number(s.seatId) || s.seatId);
+      
+      // Bắt buộc phải hold ghế trong Redis trước khi tạo đơn
+      await holdSeats({
+        showtimeId: activeShowtime.id,
+        seatIds,
+      });
+
+      // Sau đó gọi API tạo Booking
+      const response = await createBooking({
+        showtimeId: activeShowtime.id,
+        seatIds,
+      });
+
+      // Bỏ qua resetBooking để giữ giao diện, chuyển sang trang Thanh toán cùng bookingId
+      navigate("/booking/payment", { state: { bookingId: response.data.id } });
+    } catch (err) {
+      console.error("Failed to create booking:", err);
+      alert(err?.response?.data?.message || "Không thể đặt vé. Vui lòng thử lại!");
+    }
   };
 
   return {

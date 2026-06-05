@@ -1,63 +1,124 @@
-import { useMemo } from 'react';
-import { mockAdminBookings, mockCinemas, mockMovies } from '@/utils/mockData';
-
-function parseAmount(amountValue) {
-  return Number.parseInt(String(amountValue).replaceAll(',', ''), 10) || 0;
-}
+import { useEffect, useMemo, useState } from 'react';
+import { getBookings } from '@/features/admin/bookings/services/bookingService';
+import { cinemaService } from '@/features/admin/cinemas/services/cinemaService';
+import { movieService } from '@/features/admin/movies/services/movieService';
 
 function formatNumber(value) {
   return new Intl.NumberFormat('vi-VN').format(value);
 }
 
-function getSeatCount(seatValue) {
-  if (!seatValue) {
-    return 0;
-  }
-
-  return String(seatValue)
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean).length;
+function getSeatCount(booking) {
+  return Array.isArray(booking?.seatHolds) ? booking.seatHolds.length : 0;
 }
 
-function formatAverageOccupancy(cinemas) {
-  if (cinemas.length === 0) {
-    return '0%';
-  }
+function getResponseArray(response) {
+  return Array.isArray(response?.data) ? response.data : [];
+}
 
-  const total = cinemas.reduce((sum, cinema) => sum + Number.parseInt(cinema.occupancy, 10), 0);
-  return `${Math.round(total / cinemas.length)}%`;
+function getLastSixMonths() {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+    return {
+      key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+      month: date.toLocaleString('en-US', { month: 'short' }),
+      value: 0,
+    };
+  });
+}
+
+function formatBookingRow(booking) {
+  return {
+    id: booking.bookingCode || booking.id,
+    customer: booking.user?.fullName || booking.staff?.fullName || '',
+    movie: booking.showtime?.movie?.title || '',
+    amount: formatNumber(Number(booking.totalAmount) || 0),
+    status: booking.status || '',
+  };
 }
 
 /**
  * @param {(en: string, vi: string) => string} tx
  */
 function useDashboard(tx) {
+  const [bookings, setBookings] = useState([]);
+  const [cinemas, setCinemas] = useState([]);
+  const [movies, setMovies] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDashboardData() {
+      try {
+        const [bookingResponse, cinemaResponse, movieResponse] = await Promise.all([
+          getBookings({ page: 1, pageSize: 100 }),
+          cinemaService.getCinemas({ page: 1, pageSize: 100 }),
+          movieService.getMovies({ page: 1, pageSize: 100 }),
+        ]);
+
+        if (isMounted) {
+          setBookings(getResponseArray(bookingResponse));
+          setCinemas(getResponseArray(cinemaResponse));
+          setMovies(getResponseArray(movieResponse));
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+        if (isMounted) {
+          setBookings([]);
+          setCinemas([]);
+          setMovies([]);
+        }
+      }
+    }
+
+    loadDashboardData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const statCards = useMemo(() => {
-    const revenue = mockAdminBookings.reduce((sum, booking) => sum + parseAmount(booking.amount), 0);
-    const tickets = mockAdminBookings.reduce((sum, booking) => sum + getSeatCount(booking.seats), 0);
-    const occupancy = formatAverageOccupancy(mockCinemas);
-    const activeMovies = mockMovies.length;
+    const paidBookings = bookings.filter((booking) => booking.status === 'PAID');
+    const revenue = paidBookings.reduce((sum, booking) => sum + (Number(booking.totalAmount) || 0), 0);
+    const tickets = paidBookings.reduce((sum, booking) => sum + getSeatCount(booking), 0);
+    const activeMovies = movies.filter((movie) =>
+      ['NOW_SHOWING', 'ACTIVE', 'SHOWING'].includes(movie.status),
+    ).length || movies.length;
 
     return [
       { label: tx('Revenue', 'Doanh thu'), value: formatNumber(revenue) },
       { label: tx('Tickets', 'Vé bán ra'), value: formatNumber(tickets) },
-      { label: tx('Occupancy', 'Lấp đầy'), value: occupancy },
+      { label: tx('Cinemas', 'Rạp phim'), value: formatNumber(cinemas.length) },
       { label: tx('Active movies', 'Phim đang chiếu'), value: formatNumber(activeMovies) },
     ];
-  }, [tx]);
+  }, [bookings, cinemas.length, movies, tx]);
 
-  const monthlyRevenue = useMemo(
-    () => [
-      { month: 'Jan', value: 58 },
-      { month: 'Feb', value: 65 },
-      { month: 'Mar', value: 61 },
-      { month: 'Apr', value: 74 },
-      { month: 'May', value: 82 },
-      { month: 'Jun', value: 77 },
-    ],
-    [],
-  );
+  const monthlyRevenue = useMemo(() => {
+    const months = getLastSixMonths();
+    const monthByKey = new Map(months.map((month) => [month.key, month]));
+
+    bookings
+      .filter((booking) => booking.status === 'PAID')
+      .forEach((booking) => {
+        const date = new Date(booking.createdAt);
+        if (Number.isNaN(date.getTime())) return;
+
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const month = monthByKey.get(key);
+        if (month) {
+          month.value += Number(booking.totalAmount) || 0;
+        }
+      });
+
+    const maxRevenue = Math.max(...months.map((month) => month.value), 0);
+    if (maxRevenue === 0) return months.map(({ month }) => ({ month, value: 0 }));
+
+    return months.map(({ month, value }) => ({
+      month,
+      value: Math.round((value / maxRevenue) * 100),
+    }));
+  }, [bookings]);
 
   const recentBookingColumns = useMemo(
     () => [
@@ -71,15 +132,8 @@ function useDashboard(tx) {
   );
 
   const recentBookingRows = useMemo(
-    () =>
-      mockAdminBookings.slice(0, 5).map((booking) => ({
-        id: booking.id,
-        customer: booking.customer,
-        movie: booking.movie,
-        amount: booking.amount,
-        status: booking.status,
-      })),
-    [],
+    () => bookings.slice(0, 5).map(formatBookingRow),
+    [bookings],
   );
 
   return {
