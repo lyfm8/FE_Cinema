@@ -12,6 +12,8 @@ function SeatSelectionPage() {
     totalPrice,
     toggleSeat,
     handleContinuePayment,
+    loading,
+    error,
   } = useSeatSelectionPage();
 
   return (
@@ -32,7 +34,18 @@ function SeatSelectionPage() {
             </p>
           </div>
 
-          <SeatMap seats={seats} selectedSeats={selectedSeats} onToggleSeat={toggleSeat} />
+          {loading ? (
+            <div className="flex h-40 items-center justify-center text-stone">
+              {tx('Loading seats...', 'Đang tải sơ đồ ghế...')}
+            </div>
+          ) : error ? (
+            <div className="flex h-40 items-center justify-center text-error">
+              {error}
+            </div>
+          ) : (
+            <SeatMap seats={seats} selectedSeats={selectedSeats} onToggleSeat={toggleSeat} />
+          )}
+
           <SeatLegend />
         </section>
 
