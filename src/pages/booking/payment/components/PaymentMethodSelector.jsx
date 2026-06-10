@@ -1,4 +1,4 @@
-﻿import useLanguage from '@/features/i18n/hooks/useLanguage';
+import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 const METHODS = [
   { value: 'CARD', label: 'Card' },

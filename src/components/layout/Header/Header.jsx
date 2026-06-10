@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import useAuth from '@/features/auth/hooks/useAuth';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
+import NotificationBell from '@/components/shared/NotificationBell/NotificationBell';
 
 function Header() {
   const { isAuthenticated, signOut, user } = useAuth();
@@ -65,7 +66,9 @@ function Header() {
               {isVietnamese ? 'VI / EN' : 'EN / VI'}
             </button>
             {isAuthenticated ? (
-              <div className="relative" ref={dropdownRef}>
+              <div className="flex items-center gap-4">
+                <NotificationBell />
+                <div className="relative" ref={dropdownRef}>
                 <button 
                   onClick={() => setShowDropdown(!showDropdown)}
                   className="flex items-center gap-2 rounded-full border border-gray-200 bg-white p-1 pr-3 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-galaxyBlue/30 shadow-sm"
@@ -108,6 +111,7 @@ function Header() {
                     </button>
                   </div>
                 )}
+              </div>
               </div>
             ) : (
               <div className="flex items-center gap-3">
