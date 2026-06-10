@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import useAuth from '@/features/auth/hooks/useAuth';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
+import NotificationBell from '@/components/shared/NotificationBell/NotificationBell';
 
 function AdminLayout() {
   const { signOut, user } = useAuth();
@@ -53,6 +54,8 @@ function AdminLayout() {
             {isVietnamese ? 'VI / EN' : 'EN / VI'}
           </button>
           
+          <NotificationBell />
+
           <div className="relative" ref={dropdownRef}>
             <button 
               onClick={() => setShowDropdown(!showDropdown)}
