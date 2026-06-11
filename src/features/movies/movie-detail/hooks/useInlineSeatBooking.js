@@ -257,7 +257,7 @@ function useInlineSeatBooking() {
       });
 
       // Bỏ qua resetBooking để giữ giao diện, chuyển sang trang Thanh toán cùng bookingId
-      navigate("/booking/payment", { state: { bookingId: response.data.id } });
+      navigate("/booking/checkout", { state: { bookingId: response.data.id } });
     } catch (err) {
       console.error("Failed to create booking:", err);
       alert(err?.response?.data?.message || "Không thể đặt vé. Vui lòng thử lại!");
