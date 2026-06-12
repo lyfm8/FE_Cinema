@@ -12,9 +12,9 @@ function useSeatSelectionPage() {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [rawSeats, setRawSeats] = useState([]);
   
-  // Real-time socket updates
   const { unavailableSeatIds } = useSeatSocket(showtimeId);
 
   useEffect(() => {
@@ -27,7 +27,6 @@ function useSeatSelectionPage() {
   const fetchShowtimeSeats = async () => {
     try {
       setLoading(true);
-      // Gọi API lấy chi tiết suất chiếu, trong đó BE đã đính kèm danh sách ghế ở mảng 'seats'
       const response = await axiosInstance.get(`/showtimes/${showtimeId}`);
       if (response.data?.data?.seats) {
         setRawSeats(response.data.data.seats);
@@ -40,7 +39,6 @@ function useSeatSelectionPage() {
     }
   };
 
-  // Group rawSeats by row to match SeatMap component's expected structure
   const seats = useMemo(() => {
     if (!rawSeats || rawSeats.length === 0) return [];
 
@@ -50,25 +48,22 @@ function useSeatSelectionPage() {
         grouped[seat.row] = [];
       }
       
-      // Xác định trạng thái cuối cùng: nếu nằm trong list của Socket thì chuyển thành RESERVED
       let finalStatus = seat.status?.toLowerCase() || SEAT_STATUS.AVAILABLE;
       if (unavailableSeatIds.includes(seat.seatId)) {
-        finalStatus = SEAT_STATUS.RESERVED; // hoặc SEAT_STATUS.SOLD tuỳ UI
+        finalStatus = SEAT_STATUS.RESERVED;
       }
 
       grouped[seat.row].push({
-        id: seat.seatId, // Numeric ID từ BE
+        id: seat.seatId,
         status: finalStatus,
         row: seat.row,
         col: seat.column,
       });
     });
 
-    // Sắp xếp các hàng theo alphabet (A -> Z)
     const sortedRows = Object.keys(grouped).sort();
     
     return sortedRows.map((rowLetter) => {
-      // Sắp xếp ghế trong hàng theo cột (1 -> 16)
       const rowSeats = grouped[rowLetter].sort((a, b) => a.col - b.col);
       return {
         rowLabel: rowLetter,
@@ -77,12 +72,37 @@ function useSeatSelectionPage() {
     });
   }, [rawSeats, unavailableSeatIds]);
 
-  // Giả sử giá vé tạm thời là 90k, thực tế sẽ phải tính giá linh hoạt dựa trên roomType/dayType
   const totalPrice = useMemo(() => selectedSeats.length * 90000, [selectedSeats]);
 
-  const handleContinuePayment = () => {
-    // FE chỉ chuyển hướng, lúc nào render trang Checkout mới gọi API holdSeats
-    navigate('/booking/payment');
+  const handleContinuePayment = async () => {
+    if (selectedSeats.length === 0) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      // Bước 1: Giữ ghế (5 phút – đồng bộ với backend timeout)
+      await axiosInstance.post('/bookings/hold-seats', {
+        showtimeId: Number(showtimeId),
+        seatIds: selectedSeats,
+      });
+
+      // Bước 2: Tạo booking (backend tính tiền, không nhận từ FE)
+      const bookingResponse = await axiosInstance.post('/bookings', {
+        showtimeId: Number(showtimeId),
+        seatIds: selectedSeats,
+      });
+
+      if (bookingResponse.data?.success) {
+        const bookingId = bookingResponse.data.data?.id;
+        navigate('/booking/checkout', { state: { bookingId } });
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Không thể tiến hành đặt vé. Vui lòng thử lại.';
+      setError(msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return {
@@ -92,8 +112,10 @@ function useSeatSelectionPage() {
     toggleSeat,
     handleContinuePayment,
     loading,
+    submitting,
     error,
   };
 }
 
 export default useSeatSelectionPage;
+
