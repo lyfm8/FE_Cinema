@@ -5,6 +5,7 @@ import CheckoutPage from '@/pages/booking/checkout';
 import PaymentResultPage from '@/pages/booking/payment-result';
 import ConfirmationPage from '@/pages/booking/confirmation';
 import ProfilePage from '@/pages/profile';
+import BookingHistoryPage from '@/pages/booking/history/BookingHistoryPage';
 import CinemasPage from '@/pages/cinemas/CinemasPage';
 import SeatSelectionPage from '@/pages/booking/seat-selection';
 
@@ -18,6 +19,7 @@ const userRoutes = [
   { path: '/booking/payment-result', element: <PaymentResultPage /> },
   { path: '/booking/confirmation', element: <ConfirmationPage /> },
   { path: '/profile', element: <ProfilePage />, protected: true },
+  { path: '/booking-history', element: <BookingHistoryPage />, protected: true },
 ];
 
 export default userRoutes;

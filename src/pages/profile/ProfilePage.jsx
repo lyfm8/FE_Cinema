@@ -5,7 +5,7 @@ import useProfilePage from '@/features/profile/hooks/useProfilePage';
 
 function ProfilePage() {
   const { tx } = useLanguage();
-  const { profile, bookings, loading, error, saving, saveMessage, saveError, saveProfile } = useProfilePage();
+  const { profile, loading, error, saving, saveMessage, saveError, saveProfile } = useProfilePage();
 
   return (
     <div className="page-container space-y-6">
