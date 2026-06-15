@@ -19,10 +19,15 @@ function HeroBanner({ featuredMovies = [] }) {
     goToSlide((currentIndex + 1) % featuredMovies.length);
   }, [currentIndex, featuredMovies.length, goToSlide]);
 
-  // Auto-slide every 6 seconds
+  const goPrev = useCallback(() => {
+    if (featuredMovies.length <= 1) return;
+    goToSlide((currentIndex - 1 + featuredMovies.length) % featuredMovies.length);
+  }, [currentIndex, featuredMovies.length, goToSlide]);
+
+  // Auto-slide every 3 seconds
   useEffect(() => {
     if (featuredMovies.length <= 1) return;
-    const timer = setInterval(goNext, 6000);
+    const timer = setInterval(goNext, 3000);
     return () => clearInterval(timer);
   }, [goNext, featuredMovies.length]);
 
@@ -162,6 +167,30 @@ function HeroBanner({ featuredMovies = [] }) {
           </div>
         </div>
       </div>
+
+      {/* Navigation Arrows */}
+      {featuredMovies.length > 1 && (
+        <>
+          <button
+            onClick={goPrev}
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white backdrop-blur-md transition-all border border-white/10 hover:scale-105"
+            aria-label="Previous slide"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={goNext}
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white backdrop-blur-md transition-all border border-white/10 hover:scale-105"
+            aria-label="Next slide"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
 
       {/* Dot indicators */}
       {featuredMovies.length > 1 && (

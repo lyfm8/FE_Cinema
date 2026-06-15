@@ -54,9 +54,6 @@ function HomePage() {
       {/* Hero Banner — Full width */}
       <HeroBanner featuredMovies={featuredMovies} />
 
-      {/* Quick Booking Bar */}
-      <QuickBooking movies={nowShowing.length > 0 ? nowShowing : movies} />
-
       {/* Now Showing */}
       {nowShowing.length > 0 && (
         <NowShowingSection movies={nowShowing} />
