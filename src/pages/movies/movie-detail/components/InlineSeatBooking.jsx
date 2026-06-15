@@ -244,7 +244,7 @@ function InlineSeatBooking({
             </div>
           )}
 
-          <div className="rounded-xl border-base bg-cream/40 p-4 space-y-3">
+          <div className="rounded-xl bg-cream/40 p-4 space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-stone">
               {tx("Order Summary", "Chi tiết đơn hàng")}
             </p>
@@ -267,7 +267,7 @@ function InlineSeatBooking({
             })}
 
             {/* Divider + Grand Total */}
-            <div className="border-t border-base pt-3 flex items-center justify-between">
+            <div className="pt-3 flex items-center justify-between">
               <p className="text-sm font-bold uppercase text-ink/70">
                 {tx("Grand Total", "Tổng cộng")}
               </p>

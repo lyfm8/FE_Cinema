@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Spinner from "@/components/ui/Spinner";
 import useLanguage from "@/features/i18n/hooks/useLanguage";
 
@@ -35,6 +35,19 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
   }, [safeShowtimes]);
 
   const [selectedCinemaId, setSelectedCinemaId] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   // Auto-select first cinema if not selected
   useMemo(() => {
@@ -72,15 +85,57 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
         </div>
 
         {cinemas.length > 0 && (
-          <select 
-            className="rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm font-medium text-ink shadow-sm focus:border-galaxyBlue focus:outline-none focus:ring-1 focus:ring-galaxyBlue"
-            value={selectedCinemaId}
-            onChange={(e) => setSelectedCinemaId(e.target.value)}
-          >
-            {cinemas.map(c => (
-              <option key={c.id} value={String(c.id)}>{c.name}</option>
-            ))}
-          </select>
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setDropdownOpen(prev => !prev)}
+              className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 pl-4 pr-3 text-sm font-semibold text-ink shadow-sm transition-all hover:border-galaxyBlue hover:shadow-md focus:outline-none focus:ring-2 focus:ring-galaxyBlue/30"
+            >
+              <svg className="w-4 h-4 text-galaxyBlue flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span className="max-w-[180px] truncate">
+                {cinemas.find(c => String(c.id) === selectedCinemaId)?.name || tx("Select cinema", "Chọn rạp")}
+              </span>
+              <svg
+                className={`w-4 h-4 text-stone transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                viewBox="0 0 20 20" fill="currentColor"
+              >
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+              </svg>
+            </button>
+
+            {dropdownOpen && (
+              <div
+                className="absolute left-0 z-30 mt-1 min-w-[100%] rounded-xl border border-gray-100 bg-white p-1.5 shadow-xl"
+                style={{ animation: "dropdown-in 0.15s ease-out" }}
+              >
+                {cinemas.map(c => {
+                  const isActive = String(c.id) === selectedCinemaId;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => { setSelectedCinemaId(String(c.id)); setDropdownOpen(false); }}
+                      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                        isActive
+                          ? "bg-galaxyBlue/8 font-semibold text-galaxyBlue"
+                          : "text-ink hover:bg-gray-50"
+                      }`}
+                    >
+                      <span className="flex-1 truncate">{c.name}</span>
+                      {isActive && (
+                        <svg className="w-4 h-4 text-galaxyBlue flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -148,7 +203,7 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
                           {timeString}
                         </span>
                         <span className="text-[10px] font-bold text-stone transition-colors group-hover:text-blue-100">
-                          R{showtime.room?.name || showtime.roomId} -{" "}
+                          {showtime.room?.roomType || "Standard"} –{" "}
                           {showtime.format?.replace("FORMAT_", "") || showtime.format}
                         </span>
                       </button>

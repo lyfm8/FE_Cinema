@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useBooking from "@/features/booking/hooks/useBooking";
 import { publicMovieService } from "@/features/movies/services/movieService";
@@ -193,6 +193,10 @@ function useInlineSeatBooking() {
   const selectShowtime = async (showtime) => {
     if (!showtime?.id) return;
 
+    if (window.location.hash !== "#seat-booking") {
+      window.history.pushState(null, "", `${window.location.pathname}${window.location.search}#seat-booking`);
+    }
+
     setLoadingSeatMap(true);
     setSeatMapError("");
     setActiveShowtime(showtime);
@@ -272,13 +276,39 @@ function useInlineSeatBooking() {
     toggleSeat(seat.seatId);
   };
 
-  const handleBackToShowtimes = () => {
+  const clearShowtimeState = useCallback(() => {
     setActiveShowtime(null);
     setShowtimeDetail(null);
     setSeatMapError("");
     setLoadingSeatMap(false);
     resetBooking();
+  }, [resetBooking]);
+
+  const handleBackToShowtimes = () => {
+    if (window.location.hash === "#seat-booking") {
+      window.history.back();
+    } else {
+      clearShowtimeState();
+    }
   };
+
+  useEffect(() => {
+    // Clean up hash on mount if there's a reload with the hash
+    if (window.location.hash === "#seat-booking") {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (activeShowtime && window.location.hash !== "#seat-booking") {
+        clearShowtimeState();
+      }
+    };
+    
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [activeShowtime, clearShowtimeState]);
 
   // ─── Confirm Modal state ──────────────────────────────────────
   const [showConfirmModal, setShowConfirmModal] = useState(false);

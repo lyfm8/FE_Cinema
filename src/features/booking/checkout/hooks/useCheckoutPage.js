@@ -31,6 +31,12 @@ function useCheckoutPage() {
     fetchConcessionProducts();
   }, [bookingId]);
 
+  useEffect(() => {
+    if (!loading && !checkoutData) {
+      navigate('/');
+    }
+  }, [loading, checkoutData, navigate]);
+
   // Đếm ngược timeout 5 phút
   useEffect(() => {
     if (!checkoutData?.expiredAt) return;
