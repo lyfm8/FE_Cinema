@@ -34,6 +34,15 @@ function MovieDetailPage() {
     handleToggleSeat,
     handleBackToShowtimes,
     handleBookTickets,
+    showConfirmModal,
+    setShowConfirmModal,
+    confirmBooking,
+    bookingLoading,
+    concessionProducts,
+    selectedConcessions,
+    handleConcessionChange,
+    concessionTotal,
+    grandTotal,
   } = useInlineSeatBooking();
 
   useEffect(() => {
@@ -96,6 +105,15 @@ function MovieDetailPage() {
             onBack={handleBackToShowtimes}
             onToggleSeat={handleToggleSeat}
             onBookTickets={handleBookTickets}
+            showConfirmModal={showConfirmModal}
+            onCloseConfirmModal={() => setShowConfirmModal(false)}
+            onConfirmBooking={confirmBooking}
+            bookingLoading={bookingLoading}
+            concessionProducts={concessionProducts}
+            selectedConcessions={selectedConcessions}
+            onConcessionChange={handleConcessionChange}
+            concessionTotal={concessionTotal}
+            grandTotal={grandTotal}
           />
         ) : (
           <ShowtimeList

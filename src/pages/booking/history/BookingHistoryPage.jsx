@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BookingHistory from '@/pages/profile/components/BookingHistory';
 import ETicketModal from '@/pages/profile/components/ETicketModal';
 import { getMyBookings } from '@/features/booking/services/bookingService';
@@ -8,6 +9,7 @@ const PAGE_SIZE = 5;
 
 function BookingHistoryPage() {
   const { tx } = useLanguage();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, pageSize: PAGE_SIZE, totalItems: 0, totalPages: 0 });
@@ -44,6 +46,10 @@ function BookingHistoryPage() {
     setIsTicketModalOpen(true);
   };
 
+  const handlePayNow = (booking) => {
+    navigate('/booking/checkout', { state: { bookingId: booking.id } });
+  };
+
   const handleCloseTicketModal = () => {
     setIsTicketModalOpen(false);
     setSelectedBooking(null);
@@ -56,7 +62,12 @@ function BookingHistoryPage() {
       </div>
 
       <div className="rounded-xl bg-white">
-        <BookingHistory bookings={bookings} loading={loading} onViewTicket={handleViewTicket} />
+        <BookingHistory 
+          bookings={bookings} 
+          loading={loading} 
+          onViewTicket={handleViewTicket} 
+          onPayNow={handlePayNow} 
+        />
       </div>
 
       {/* Pagination */}

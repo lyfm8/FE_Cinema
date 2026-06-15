@@ -35,7 +35,7 @@ function getStatusText(status) {
   }
 }
 
-function BookingHistory({ bookings, loading = false, onViewTicket }) {
+function BookingHistory({ bookings, loading = false, onViewTicket, onPayNow }) {
   const { tx } = useLanguage();
 
   return (
@@ -98,18 +98,28 @@ function BookingHistory({ bookings, loading = false, onViewTicket }) {
                   </div>
                 </div>
 
-                {onViewTicket && (
-                  <div className="ml-auto flex-shrink-0">
+                <div className="ml-auto flex-shrink-0 flex items-center gap-2 flex-col sm:flex-row">
+                  {status === 'PENDING' && onPayNow && (
+                    <button
+                      type="button"
+                      onClick={() => onPayNow(booking)}
+                      className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 rounded-lg border border-[#f26b38]/30 bg-[#f26b38]/10 px-3 py-1.5 text-xs font-bold text-[#f26b38] transition-all hover:bg-[#f26b38] hover:text-white hover:shadow-md active:scale-95"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                      {tx('Pay Now', 'Thanh toán')}
+                    </button>
+                  )}
+                  {onViewTicket && (
                     <button
                       type="button"
                       onClick={() => onViewTicket(booking)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#034ea2]/30 bg-[#034ea2]/5 px-3 py-1.5 text-xs font-semibold text-[#034ea2] transition-all hover:bg-[#034ea2] hover:text-white hover:shadow-md active:scale-95"
+                      className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 rounded-lg border border-[#034ea2]/30 bg-[#034ea2]/5 px-3 py-1.5 text-xs font-semibold text-[#034ea2] transition-all hover:bg-[#034ea2] hover:text-white hover:shadow-md active:scale-95"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                       {isSuccess ? tx('View Ticket', 'Xem vé') : tx('View Details', 'Xem chi tiết')}
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             );
           })}

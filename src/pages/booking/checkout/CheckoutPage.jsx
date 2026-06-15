@@ -61,20 +61,15 @@ function TimerBadge({ secondsLeft, formatTime }) {
 }
 
 function ComboCard({ product, quantity, onIncrease, onDecrease }) {
+  const isActive = quantity > 0;
   return (
     <div
-      className="flex items-center justify-between p-4 rounded-2xl"
-      style={{
-        background: quantity > 0 ? 'rgba(242,107,56,0.07)' : 'rgba(255,255,255,0.04)',
-        border: `1px solid ${quantity > 0 ? 'rgba(242,107,56,0.4)' : 'rgba(255,255,255,0.08)'}`,
-        transition: 'all 0.2s ease',
-      }}
+      className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
+        isActive ? 'border-[#f26b38]/40 bg-[#f26b38]/5' : 'border-base bg-white'
+      }`}
     >
       <div className="flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-          style={{ background: 'rgba(255,255,255,0.08)' }}
-        >
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-50 border border-base">
           {product.imageUrl ? (
             <img src={product.imageUrl} alt={product.name} className="w-9 h-9 rounded-lg object-cover" />
           ) : (
@@ -82,8 +77,8 @@ function ComboCard({ product, quantity, onIncrease, onDecrease }) {
           )}
         </div>
         <div>
-          <p className="text-sm font-semibold" style={{ color: '#f0ede8' }}>{product.name}</p>
-          <p className="text-xs" style={{ color: '#f26b38' }}>
+          <p className="text-sm font-semibold text-ink">{product.name}</p>
+          <p className="text-xs font-medium text-[#f26b38]">
             {product.price.toLocaleString('vi-VN')}₫
           </p>
         </div>
@@ -93,22 +88,18 @@ function ComboCard({ product, quantity, onIncrease, onDecrease }) {
         <button
           onClick={onDecrease}
           disabled={quantity === 0}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
-          style={{
-            background: quantity > 0 ? 'rgba(242,107,56,0.2)' : 'rgba(255,255,255,0.06)',
-            color: quantity > 0 ? '#f26b38' : '#666',
-            cursor: quantity === 0 ? 'not-allowed' : 'pointer',
-          }}
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+            isActive ? 'bg-[#f26b38]/10 text-[#f26b38] hover:bg-[#f26b38]/20' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+          }`}
         >
           −
         </button>
-        <span className="w-6 text-center text-sm font-bold" style={{ color: '#f0ede8' }}>
+        <span className="w-6 text-center text-sm font-bold text-ink">
           {quantity}
         </span>
         <button
           onClick={onIncrease}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
-          style={{ background: 'rgba(242,107,56,0.2)', color: '#f26b38' }}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all bg-[#f26b38]/10 text-[#f26b38] hover:bg-[#f26b38]/20"
         >
           +
         </button>
@@ -142,10 +133,10 @@ function CheckoutPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0d1b2a 0%, #1a2744 100%)' }}>
+      <div className="min-h-screen flex items-center justify-center bg-cream/30">
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 rounded-full border-4 mx-auto" style={{ borderColor: '#f26b38 transparent transparent transparent', animation: 'spin 0.8s linear infinite' }} />
-          <p style={{ color: '#8b9bbf' }}>Đang tải thông tin đặt vé...</p>
+          <div className="w-12 h-12 rounded-full border-4 mx-auto border-[#f26b38] border-r-transparent animate-spin" />
+          <p className="text-stone font-medium">Đang tải thông tin đặt vé...</p>
         </div>
       </div>
     );
@@ -154,17 +145,14 @@ function CheckoutPage() {
 
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0d1b2a 0%, #1a2744 100%)', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div className="min-h-screen bg-cream/30 font-sans text-ink">
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .checkout-card { animation: fadeUp 0.4s ease forwards; }
-        .method-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        .method-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .method-btn { transition: all 0.2s ease; }
-        .combo-row { transition: all 0.2s ease; }
         .pay-btn:active { transform: scale(0.98); }
-        .pay-btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+        .pay-btn:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(242,107,56,0.3); }
         .pay-btn { transition: all 0.2s ease; }
       `}</style>
 
@@ -172,10 +160,10 @@ function CheckoutPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: '#f26b38' }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-1 text-[#f26b38]">
               Hoàn tất đặt vé
             </p>
-            <h1 className="text-2xl font-bold" style={{ color: '#f0ede8' }}>Thanh toán</h1>
+            <h1 className="text-2xl font-bold text-ink">Thanh toán</h1>
           </div>
           {secondsLeft > 0 && <TimerBadge secondsLeft={secondsLeft} formatTime={formatTime} />}
         </div>
@@ -185,14 +173,11 @@ function CheckoutPage() {
           <div className="space-y-6">
             {/* Combo Selection */}
             {concessionProducts.length > 0 && (
-              <div
-                className="checkout-card rounded-2xl p-6"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}
-              >
-                <h2 className="font-semibold text-base mb-4 flex items-center gap-2" style={{ color: '#f0ede8' }}>
+              <div className="checkout-card rounded-2xl p-6 bg-white border border-base shadow-sm">
+                <h2 className="font-semibold text-base mb-4 flex items-center gap-2 text-ink">
                   <span className="text-lg">🍿</span>
                   Đồ ăn & Thức uống
-                  <span className="text-xs px-2 py-0.5 rounded-full ml-1" style={{ background: 'rgba(242,107,56,0.15)', color: '#f26b38' }}>
+                  <span className="text-xs px-2 py-0.5 rounded-full ml-1 bg-[#f26b38]/10 text-[#f26b38] font-semibold">
                     Tùy chọn
                   </span>
                 </h2>
@@ -211,37 +196,37 @@ function CheckoutPage() {
             )}
 
             {/* Payment Method */}
-            <div
-              className="checkout-card rounded-2xl p-6"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)', animationDelay: '0.1s' }}
-            >
-              <h2 className="font-semibold text-base mb-4" style={{ color: '#f0ede8' }}>
+            <div className="checkout-card rounded-2xl p-6 bg-white border border-base shadow-sm" style={{ animationDelay: '0.1s' }}>
+              <h2 className="font-semibold text-base mb-4 text-ink">
                 Phương thức thanh toán
               </h2>
               <div className="grid grid-cols-3 gap-3">
-                {PAYMENT_METHODS.map(method => (
-                  <button
-                    key={method.id}
-                    onClick={() => setSelectedMethod(method.id)}
-                    className="method-btn rounded-2xl p-4 flex flex-col items-center gap-2"
-                    style={{
-                      background: selectedMethod === method.id ? `${method.color}22` : 'rgba(255,255,255,0.04)',
-                      border: `1.5px solid ${selectedMethod === method.id ? method.color : 'rgba(255,255,255,0.08)'}`,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {method.logo}
-                    <span
-                      className="text-xs font-semibold"
-                      style={{ color: selectedMethod === method.id ? method.color : '#8b9bbf' }}
+                {PAYMENT_METHODS.map(method => {
+                  const isSelected = selectedMethod === method.id;
+                  return (
+                    <button
+                      key={method.id}
+                      onClick={() => setSelectedMethod(method.id)}
+                      className={`method-btn rounded-2xl p-4 flex flex-col items-center gap-2 border transition-all ${
+                        isSelected ? 'bg-white shadow-sm border-2' : 'bg-gray-50 border-transparent hover:bg-gray-100'
+                      }`}
+                      style={{
+                        borderColor: isSelected ? method.color : undefined,
+                      }}
                     >
-                      {method.label}
-                    </span>
-                  </button>
-                ))}
+                      {method.logo}
+                      <span
+                        className="text-xs font-bold"
+                        style={{ color: isSelected ? method.color : '#6b7280' }}
+                      >
+                        {method.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <p className="mt-4 text-xs" style={{ color: '#5a6a8a' }}>
+              <p className="mt-4 text-xs text-stone">
                 Sau khi nhấn Thanh toán, bạn sẽ được chuyển đến cổng thanh toán {PAYMENT_METHODS.find(m => m.id === selectedMethod)?.label}. Không đóng trình duyệt cho đến khi giao dịch hoàn tất.
               </p>
             </div>
@@ -249,29 +234,22 @@ function CheckoutPage() {
 
           {/* Right Column – Order Summary */}
           <div
-            className="checkout-card rounded-2xl p-6 h-fit"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              backdropFilter: 'blur(12px)',
-              animationDelay: '0.15s',
-              position: 'sticky',
-              top: '1.5rem',
-            }}
+            className="checkout-card rounded-2xl p-6 h-fit bg-white border border-base shadow-sm sticky top-6"
+            style={{ animationDelay: '0.15s' }}
           >
-            <h2 className="font-semibold text-base mb-5" style={{ color: '#f0ede8' }}>
+            <h2 className="font-semibold text-base mb-5 text-ink">
               Tóm tắt đơn hàng
             </h2>
 
             {checkoutData && (
               <div className="space-y-4">
                 {/* Movie info */}
-                <div className="pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                  <p className="text-xs mb-1" style={{ color: '#5a6a8a' }}>Phim</p>
-                  <p className="font-semibold text-sm" style={{ color: '#f0ede8' }}>
+                <div className="pb-4 border-b border-gray-200">
+                  <p className="text-xs mb-1 text-stone font-medium uppercase tracking-wide">Phim</p>
+                  <p className="font-bold text-sm text-ink">
                     {checkoutData.showtime?.movie || '—'}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: '#8b9bbf' }}>
+                  <p className="text-xs mt-1 text-stone">
                     {checkoutData.showtime?.room} · {checkoutData.showtime?.publicStartTime
                       ? new Date(checkoutData.showtime.publicStartTime).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
                       : ''}
@@ -279,14 +257,13 @@ function CheckoutPage() {
                 </div>
 
                 {/* Seats */}
-                <div className="pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                  <p className="text-xs mb-2" style={{ color: '#5a6a8a' }}>Ghế đã chọn</p>
+                <div className="pb-4 border-b border-gray-200">
+                  <p className="text-xs mb-2 text-stone font-medium uppercase tracking-wide">Ghế đã chọn</p>
                   <div className="flex flex-wrap gap-1.5">
                     {checkoutData.seats?.map(seat => (
                       <span
                         key={seat.id}
-                        className="px-2.5 py-1 rounded-lg text-xs font-bold"
-                        style={{ background: 'rgba(3,78,162,0.25)', color: '#7eb3f7', border: '1px solid rgba(3,78,162,0.4)' }}
+                        className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#034ea2]/10 text-[#034ea2] border border-[#034ea2]/20"
                       >
                         {seat.row}{seat.column}
                       </span>
@@ -297,60 +274,55 @@ function CheckoutPage() {
                 {/* Price breakdown */}
                 <div className="space-y-2.5">
                   <div className="flex justify-between text-sm">
-                    <span style={{ color: '#8b9bbf' }}>Vé ({checkoutData.seats?.length} ghế)</span>
-                    <span style={{ color: '#f0ede8' }}>
+                    <span className="text-stone font-medium">Vé ({checkoutData.seats?.length} ghế)</span>
+                    <span className="font-semibold text-ink">
                       {ticketPrice.toLocaleString('vi-VN')}₫
                     </span>
                   </div>
 
                   {comboTotal > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span style={{ color: '#8b9bbf' }}>Đồ ăn & Thức uống</span>
-                      <span style={{ color: '#f0ede8' }}>{comboTotal.toLocaleString('vi-VN')}₫</span>
+                      <span className="text-stone font-medium">Đồ ăn & Thức uống</span>
+                      <span className="font-semibold text-ink">{comboTotal.toLocaleString('vi-VN')}₫</span>
                     </div>
                   )}
 
                   {checkoutData.discountAmount > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span style={{ color: '#10b981' }}>Giảm giá</span>
-                      <span style={{ color: '#10b981' }}>−{checkoutData.discountAmount.toLocaleString('vi-VN')}₫</span>
+                      <span className="text-green-600 font-medium">Giảm giá</span>
+                      <span className="font-semibold text-green-600">−{checkoutData.discountAmount.toLocaleString('vi-VN')}₫</span>
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center pt-3" style={{ borderTop: '1px dashed rgba(255,255,255,0.1)' }}>
-                    <span className="font-bold text-base" style={{ color: '#f0ede8' }}>Tổng cộng</span>
-                    <span className="font-bold text-xl" style={{ color: '#f26b38' }}>
+                  <div className="flex justify-between items-center pt-4 mt-2 border-t border-gray-200">
+                    <span className="font-bold text-base text-ink uppercase tracking-wide">Tổng cộng</span>
+                    <span className="font-bold text-2xl text-[#f26b38] leading-normal pb-1">
                       {grandTotal.toLocaleString('vi-VN')}₫
                     </span>
                   </div>
                 </div>
 
                 {error && (
-                  <div className="rounded-xl px-4 py-3 text-sm" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
+                  <div className="rounded-xl px-4 py-3 text-sm bg-red-50 border border-red-200 text-red-600">
                     {error}
                   </div>
                 )}
 
                 {secondsLeft === 0 ? (
-                  <div className="rounded-xl px-4 py-3 text-sm text-center" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
+                  <div className="rounded-xl px-4 py-3 text-sm text-center bg-red-50 border border-red-200 text-red-600 font-medium">
                     Phiên đặt vé đã hết hạn
                   </div>
                 ) : (
                   <button
                     onClick={handleSubmit}
                     disabled={submitting}
-                    className="pay-btn w-full py-3.5 rounded-2xl font-bold text-sm"
-                    style={{
-                      background: submitting ? '#4a4a5a' : 'linear-gradient(135deg, #f26b38 0%, #fb9440 100%)',
-                      color: '#fff',
-                      cursor: submitting ? 'not-allowed' : 'pointer',
-                      border: 'none',
-                      letterSpacing: '0.03em',
-                    }}
+                    className={`pay-btn w-full py-3.5 rounded-xl font-bold text-sm text-white mt-4 ${
+                      submitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#f26b38]'
+                    }`}
                   >
                     {submitting ? (
                       <span className="flex items-center justify-center gap-2">
-                        <span className="w-4 h-4 rounded-full border-2 inline-block" style={{ borderColor: '#fff transparent transparent transparent', animation: 'spin 0.8s linear infinite' }} />
+                        <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                         Đang xử lý...
                       </span>
                     ) : (
