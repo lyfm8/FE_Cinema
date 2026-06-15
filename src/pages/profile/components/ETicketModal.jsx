@@ -1,6 +1,8 @@
 import Modal from '@/components/ui/Modal/Modal';
 import Button from '@/components/ui/Button';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
+import { getConcessions } from '@/features/booking/services/bookingService';
+import { useState, useEffect } from 'react';
 
 function formatCurrency(amount) {
   if (typeof amount !== 'number') return amount;
@@ -12,6 +14,15 @@ function formatCurrency(amount) {
 
 function ETicketModal({ isOpen, booking, onClose }) {
   const { tx } = useLanguage();
+  const [concessions, setConcessions] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      getConcessions()
+        .then((res) => setConcessions(res?.data || []))
+        .catch((err) => console.error("Failed to load concessions:", err));
+    }
+  }, [isOpen]);
 
   if (!isOpen || !booking) {
     return null;
@@ -97,11 +108,16 @@ function ETicketModal({ isOpen, booking, onClose }) {
             <div>
               <p className="text-xs font-semibold uppercase text-ink/50">{tx('Concessions', 'Bắp nước')}</p>
               <ul className="mt-1 space-y-1">
-                {bookingConcessions.map((bc, idx) => (
-                  <li key={idx} className="flex justify-between font-medium text-ink">
-                    <span>{bc.product?.name || `Combo #${bc.productId}`} x{bc.quantity}</span>
-                  </li>
-                ))}
+                {bookingConcessions.map((bc, idx) => {
+                  const id = bc.productId || bc.concessionId;
+                  const found = concessions.find((c) => c.id === id);
+                  const name = bc.product?.name || bc.concession?.name || found?.name || `Combo #${id}`;
+                  return (
+                    <li key={idx} className="flex justify-between font-medium text-ink">
+                      <span>{name} x{bc.quantity}</span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
