@@ -59,6 +59,15 @@ function useCheckoutPage() {
       if (response.success) {
         setCheckoutData(response.data);
         setSecondsLeft(response.data.secondsRemaining);
+        
+        // Khởi tạo state bắp nước từ dữ liệu đặt vé trước đó
+        if (response.data.concessions && response.data.concessions.length > 0) {
+          const initialCombos = {};
+          response.data.concessions.forEach(c => {
+            initialCombos[c.productId] = c.quantity;
+          });
+          setSelectedCombos(initialCombos);
+        }
       }
     } catch (err) {
       setError(err?.response?.data?.message || 'Không thể tải thông tin đặt vé');

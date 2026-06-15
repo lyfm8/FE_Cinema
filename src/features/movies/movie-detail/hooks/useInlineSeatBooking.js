@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useBooking from "@/features/booking/hooks/useBooking";
 import { publicMovieService } from "@/features/movies/services/movieService";
-import { holdSeats, createBooking, getBookedSeatsForShowtime } from "@/features/booking/services/bookingService";
+import { holdSeats, createBooking, getBookedSeatsForShowtime, getConcessions } from "@/features/booking/services/bookingService";
 import { io } from "socket.io-client";
 
 const ROOM_PRICES = {
@@ -145,6 +145,51 @@ function useInlineSeatBooking() {
     [selectedSeatObjects.length, pricePerSeat],
   );
 
+  // ─── Concessions ──────────────────────────────────────────────
+  const [concessionProducts, setConcessionProducts] = useState([]);
+  const [selectedConcessions, setSelectedConcessions] = useState({});
+  // { [productId]: quantity }
+
+  useEffect(() => {
+    let mounted = true;
+    getConcessions()
+      .then((res) => {
+        if (mounted && res?.data) {
+          setConcessionProducts(Array.isArray(res.data) ? res.data : []);
+        }
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  const handleConcessionChange = (productId, delta) => {
+    setSelectedConcessions((prev) => {
+      const current = prev[productId] || 0;
+      const next = Math.max(0, current + delta);
+      if (next === 0) {
+        const copy = { ...prev };
+        delete copy[productId];
+        return copy;
+      }
+      return { ...prev, [productId]: next };
+    });
+  };
+
+  const concessionTotal = useMemo(() => {
+    return Object.entries(selectedConcessions).reduce((sum, [id, qty]) => {
+      const product = concessionProducts.find((p) => p.id === Number(id));
+      return sum + (product?.price || 0) * qty;
+    }, 0);
+  }, [selectedConcessions, concessionProducts]);
+
+  const grandTotal = totalPrice + concessionTotal;
+
+  const concessionItems = useMemo(() => {
+    return Object.entries(selectedConcessions)
+      .filter(([, qty]) => qty > 0)
+      .map(([id, qty]) => ({ productId: Number(id), quantity: qty }));
+  }, [selectedConcessions]);
+
   const selectShowtime = async (showtime) => {
     if (!showtime?.id) return;
 
@@ -235,32 +280,43 @@ function useInlineSeatBooking() {
     resetBooking();
   };
 
-  const handleBookTickets = async () => {
+  // ─── Confirm Modal state ──────────────────────────────────────
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
+
+  const handleBookTickets = () => {
     if (selectedSeatObjects.length === 0 || !activeShowtime?.id) return;
+    setShowConfirmModal(true);
+  };
 
-    const isConfirm = window.confirm("Xác nhận tạo đơn đặt vé?");
-    if (!isConfirm) return;
-
+  const confirmBooking = async () => {
+    setBookingLoading(true);
     try {
       const seatIds = selectedSeatObjects.map(s => Number(s.seatId) || s.seatId);
       
-      // Bắt buộc phải hold ghế trong Redis trước khi tạo đơn
       await holdSeats({
         showtimeId: activeShowtime.id,
         seatIds,
       });
 
-      // Sau đó gọi API tạo Booking
-      const response = await createBooking({
+      const bookingPayload = {
         showtimeId: activeShowtime.id,
         seatIds,
-      });
+      };
+      if (concessionItems.length > 0) {
+        bookingPayload.concessions = concessionItems;
+      }
 
-      // Bỏ qua resetBooking để giữ giao diện, chuyển sang trang Thanh toán cùng bookingId
+      const response = await createBooking(bookingPayload);
+
+      setShowConfirmModal(false);
       navigate("/booking/checkout", { state: { bookingId: response.data.id } });
     } catch (err) {
       console.error("Failed to create booking:", err);
+      setShowConfirmModal(false);
       alert(err?.response?.data?.message || "Không thể đặt vé. Vui lòng thử lại!");
+    } finally {
+      setBookingLoading(false);
     }
   };
 
@@ -277,6 +333,15 @@ function useInlineSeatBooking() {
     handleToggleSeat,
     handleBackToShowtimes,
     handleBookTickets,
+    showConfirmModal,
+    setShowConfirmModal,
+    confirmBooking,
+    bookingLoading,
+    concessionProducts,
+    selectedConcessions,
+    handleConcessionChange,
+    concessionTotal,
+    grandTotal,
   };
 }
 

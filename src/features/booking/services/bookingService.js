@@ -22,9 +22,15 @@ export async function getBookedSeatsForShowtime(showtimeId) {
   return response.data;
 }
 
+export async function getConcessions() {
+  const response = await axiosInstance.get('/concessions');
+  return response.data;
+}
+
 export default {
   createBooking,
   getMyBookings,
   holdSeats,
   getBookedSeatsForShowtime,
+  getConcessions,
 };
