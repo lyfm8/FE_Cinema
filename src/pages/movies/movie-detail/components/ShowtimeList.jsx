@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import Spinner from "@/components/ui/Spinner";
+import Pagination from "@/components/shared/Pagination";
 import useLanguage from "@/features/i18n/hooks/useLanguage";
 
 function countTotalSessions(showtimesObj) {
@@ -49,10 +50,13 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   // Auto-select first cinema if not selected
   useMemo(() => {
     if (cinemas.length > 0 && !selectedCinemaId) {
       setSelectedCinemaId(String(cinemas[0].id));
+      setCurrentPage(1);
     }
   }, [cinemas, selectedCinemaId]);
 
@@ -69,8 +73,18 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
     return filtered;
   }, [safeShowtimes, selectedCinemaId]);
 
+  // Reset page when cinema changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCinemaId]);
+
   const totalSessions = countTotalSessions(filteredShowtimes);
   const days = Object.keys(filteredShowtimes);
+
+  // Pagination logic
+  const itemsPerPage = 3;
+  const totalPages = Math.ceil(days.length / itemsPerPage);
+  const paginatedDays = days.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <section className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -162,7 +176,7 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
               {tx("No showtimes available.", "Chưa có lịch chiếu.")}
             </p>
           ) : (
-            days.map((day) => (
+            paginatedDays.map((day) => (
               <article key={day} className="space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="h-5 w-1.5 rounded-full bg-galaxyOrange shadow-sm" />
@@ -212,6 +226,17 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
                 </div>
               </article>
             ))
+          )}
+
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <Pagination
+                page={currentPage}
+                totalPages={totalPages}
+                onPrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                onNext={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              />
+            </div>
           )}
         </div>
       ) : null}
