@@ -96,6 +96,13 @@ function Header() {
                       </Link>
                     )}
                     <Link 
+                      to="/booking-history" 
+                      onClick={() => setShowDropdown(false)}
+                      className="block px-4 py-2 text-sm text-ink hover:bg-gray-50 hover:text-galaxyBlue transition-colors"
+                    >
+                      {tx('Booking History', 'Lịch sử đặt vé')}
+                    </Link>
+                    <Link 
                       to="/profile" 
                       onClick={() => setShowDropdown(false)}
                       className="block px-4 py-2 text-sm text-ink hover:bg-gray-50 hover:text-galaxyBlue transition-colors"
