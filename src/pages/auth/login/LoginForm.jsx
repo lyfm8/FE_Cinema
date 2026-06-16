@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
@@ -65,6 +65,12 @@ function LoginForm({ formData, fieldErrors, loading, apiError, onChange, onSubmi
             {tx('Register', 'Đăng ký')}
           </Link>
         </p>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-stone-200/50 text-center">
+        <Link to="/" className="text-sm text-stone hover:text-ink transition-colors inline-flex items-center justify-center gap-2">
+          <span>&larr;</span> {tx('Back to Home', 'Quay về trang chủ')}
+        </Link>
       </div>
     </form>
   );
