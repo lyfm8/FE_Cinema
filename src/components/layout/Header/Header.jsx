@@ -103,7 +103,7 @@ function Header() {
                       <Link
                         to="/staff/check-in"
                         onClick={() => setShowDropdown(false)}
-                        className="block px-4 py-2 text-sm font-medium text-galaxyOrange transition-colors hover:bg-orange-50"
+                        className="block px-4 py-2 text-sm text-ink hover:bg-gray-50 hover:text-galaxyBlue transition-colors"
                       >
                         {tx('Ticket Check-in', 'Soát vé')}
                       </Link>
