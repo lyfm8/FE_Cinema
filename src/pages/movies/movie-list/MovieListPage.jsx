@@ -1,9 +1,14 @@
+import React, { useEffect } from 'react';
 import MovieFilter from '@/pages/movies/movie-list/components/MovieFilter';
 import MovieGrid from '@/pages/movies/movie-list/components/MovieGrid';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 import useMovieListPage from '@/features/movies/movie-list/hooks/useMovieListPage';
 
 function MovieListPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const { tx } = useLanguage();
   const {
     loading,

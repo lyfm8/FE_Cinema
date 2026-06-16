@@ -67,8 +67,8 @@ function MovieHomeCard({ movie }) {
   );
 }
 
-/** @param {{ movies: Array<any> }} props */
-function NowShowingSection({ movies }) {
+/** @param {{ movies: Array<any>, genreName: string }} props */
+function NowShowingSection({ movies, genreName }) {
   const { tx } = useLanguage();
 
   return (
@@ -79,15 +79,15 @@ function NowShowingSection({ movies }) {
           <div className="h-8 w-1.5 rounded-full bg-[#f26b38]" />
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-[#f26b38] mb-1">
-              {tx('Now Showing', 'Đang chiếu')}
+              {tx('Genre', 'Thể loại')}
             </p>
             <h2 className="text-2xl font-bold text-ink">
-              {tx('Movies in theaters', 'Phim đang chiếu tại rạp')}
+              {genreName}
             </h2>
           </div>
         </div>
         <Link
-          to="/movies"
+          to={`/movies?genre=${encodeURIComponent(genreName)}`}
           className="group whitespace-nowrap inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 transition-all hover:border-[#034ea2] hover:text-[#034ea2] hover:shadow-sm"
         >
           {tx('View all', 'Xem tất cả')}

@@ -28,21 +28,42 @@ export default function useHomePage() {
     fetchMovies();
   }, [fetchMovies]);
 
-  // Split movies by status
+  // Split movies by status (still needed for banner)
   const nowShowing = movies.filter((m) => m.status === 'NOW_SHOWING');
   const comingSoon = movies.filter((m) => m.status === 'COMING_SOON');
 
-  // Featured movies for hero banner (prefer now-showing, fallback to coming-soon)
+  // Featured movies for hero banner
   const moviesWithPoster = nowShowing.filter((m) => m.posterUrl);
   const featuredMovies = moviesWithPoster.length > 0
     ? moviesWithPoster.slice(0, 5)
     : comingSoon.filter((m) => m.posterUrl).slice(0, 5);
 
+  // Group ALL valid movies by Genre
+  const moviesByGenre = {};
+  movies.forEach((movie) => {
+    if (!movie.genre) return;
+    const genres = movie.genre.split(',').map(g => g.trim()).filter(Boolean);
+    genres.forEach(g => {
+      if (!moviesByGenre[g]) {
+        moviesByGenre[g] = [];
+      }
+      moviesByGenre[g].push(movie);
+    });
+  });
+
+  // Convert to array and get top genres
+  const genreSections = Object.entries(moviesByGenre)
+    .sort((a, b) => b[1].length - a[1].length)
+    .slice(0, 8) // Show up to 8 genres
+    .map(([genre, genreMovies]) => ({
+      genre,
+      movies: genreMovies.slice(0, 10) // Show up to 10 movies per genre
+    }));
+
   return {
     movies,
-    nowShowing,
-    comingSoon,
     featuredMovies,
+    genreSections,
     loading,
     error,
     refetch: fetchMovies,
