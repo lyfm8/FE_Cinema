@@ -1,17 +1,19 @@
-﻿import { Navigate } from 'react-router-dom';
-import useAuth from '@/features/auth/hooks/useAuth';
+﻿import { Navigate } from "react-router-dom";
+import useAuth from "@/features/auth/hooks/useAuth";
 
 /**
- * @param {{ children: import('react').ReactNode, role?: string }} props
+ * @param {{
+ *  children: import('react').ReactNode,
+ *  role?: string,
+ *  roles?: string[]
+ * }} props
  */
-function ProtectedRoute({ children, role }) {
+function ProtectedRoute({ children, role, roles = [] }) {
   const { initialized, isAuthenticated, user } = useAuth();
 
   if (!initialized) {
     return (
-      <div className="page-container py-10 text-sm text-stone">
-        Loading...
-      </div>
+      <div className="page-container py-10 text-sm text-stone">Loading...</div>
     );
   }
 
@@ -19,7 +21,10 @@ function ProtectedRoute({ children, role }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (role && user?.role !== role) {
+  const allowedRoles =
+    Array.isArray(roles) && roles.length > 0 ? roles : role ? [role] : [];
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
     return <Navigate to="/" replace />;
   }
 
@@ -27,4 +32,3 @@ function ProtectedRoute({ children, role }) {
 }
 
 export default ProtectedRoute;
-

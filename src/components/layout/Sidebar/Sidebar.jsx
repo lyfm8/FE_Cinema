@@ -9,7 +9,9 @@ const ADMIN_LINKS = [
   { to: '/admin/ticket-prices', label: 'Ticket Prices' },
   { to: '/admin/showtimes', label: 'Showtimes' },
   { to: '/admin/bookings', label: 'Bookings' },
+  { to: '/admin/concessions', label: 'Concessions' },
   { to: '/admin/users', label: 'Users' },
+  { to: '/staff/check-in', label: 'Ticket Check-in' },
 ];
 
 function Sidebar() {
@@ -60,7 +62,11 @@ function Sidebar() {
                         ? 'Lịch chiếu'
                         : link.label === 'Bookings'
                           ? 'Đặt vé'
-                          : 'Người dùng',
+                          : link.label === 'Concessions'
+                            ? 'Bắp nước'
+                            : link.label === 'Users'
+                            ? 'Người dùng'
+                            : 'Soát vé',
             )}
           </NavLink>
         ))}

@@ -1,4 +1,3 @@
-import React from 'react';
 import { MapPin, Phone, Mail, Navigation, MonitorPlay, CheckCircle2, AlertCircle } from '@/components/shared/Icons';
 
 import useCinemas from '@/features/cinemas/hooks/useCinemas';

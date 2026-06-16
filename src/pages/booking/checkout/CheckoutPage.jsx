@@ -67,7 +67,76 @@ function TimerBadge({ secondsLeft, formatTime }) {
       <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
       </svg>
-      <span style={{ letterSpacing: '0.05em' }}>{formatTime(secondsLeft)}</span>
+      {formatTime(secondsLeft)}
+    </div>
+  );
+}
+
+function ComboCard({ product, quantity, onIncrease, onDecrease }) {
+  const stockQuantity = Number(product.stockQuantity ?? 0);
+  const isOutOfStock = stockQuantity === 0;
+  const isMaxSelected = quantity >= stockQuantity;
+
+  return (
+    <div
+      className="flex items-center justify-between p-4 rounded-2xl"
+      style={{
+        background: quantity > 0 ? 'rgba(242,107,56,0.07)' : 'rgba(255,255,255,0.04)',
+        border: `1px solid ${quantity > 0 ? 'rgba(242,107,56,0.4)' : 'rgba(255,255,255,0.08)'}`,
+        transition: 'all 0.2s ease',
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+          style={{ background: 'rgba(255,255,255,0.08)' }}
+        >
+          {product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.name} className="w-9 h-9 rounded-lg object-cover" />
+          ) : (
+            <span>🍿</span>
+          )}
+        </div>
+        <div>
+          <p className="text-sm font-semibold" style={{ color: '#f0ede8' }}>{product.name}</p>
+          <p className="text-[11px]" style={{ color: isOutOfStock ? '#ef4444' : '#8b9bbf' }}>
+            {isOutOfStock ? 'Hết hàng' : `Còn ${stockQuantity}`}
+          </p>
+          <p className="text-xs" style={{ color: '#f26b38' }}>
+            {product.price.toLocaleString('vi-VN')}₫
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onDecrease}
+          disabled={quantity === 0}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
+          style={{
+            background: quantity > 0 ? 'rgba(242,107,56,0.2)' : 'rgba(255,255,255,0.06)',
+            color: quantity > 0 ? '#f26b38' : '#666',
+            cursor: quantity === 0 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          −
+        </button>
+        <span className="w-6 text-center text-sm font-bold" style={{ color: '#f0ede8' }}>
+          {quantity}
+        </span>
+        <button
+          onClick={onIncrease}
+          disabled={isOutOfStock || isMaxSelected}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
+          style={{
+            background: isOutOfStock || isMaxSelected ? 'rgba(255,255,255,0.06)' : 'rgba(242,107,56,0.2)',
+            color: isOutOfStock || isMaxSelected ? '#666' : '#f26b38',
+            cursor: isOutOfStock || isMaxSelected ? 'not-allowed' : 'pointer',
+          }}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }

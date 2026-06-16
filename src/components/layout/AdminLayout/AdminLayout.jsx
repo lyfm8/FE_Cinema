@@ -27,6 +27,7 @@ function AdminLayout() {
 
   const getPageTitle = () => {
     const path = location.pathname;
+    if (path.startsWith('/admin/concessions')) return tx('Concessions', 'Quản lý bắp nước');
     if (path === '/admin') return tx('Dashboard', 'Tổng quan');
     if (path.startsWith('/admin/movies')) return tx('Movie Management', 'Quản lý phim');
     if (path.startsWith('/admin/cinemas')) return tx('Cinema Management', 'Quản lý rạp');

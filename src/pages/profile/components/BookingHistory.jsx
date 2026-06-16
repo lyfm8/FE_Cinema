@@ -1,6 +1,7 @@
 import { formatDate } from '@/utils/formatDate';
 import { formatCurrency } from '@/utils/formatCurrency';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
+import { QRCodeSVG } from 'qrcode.react';
 
 function getStatusColor(status) {
   switch (status) {
@@ -35,12 +36,18 @@ function getStatusText(status) {
   }
 }
 
-function BookingHistory({ bookings, loading = false, onViewTicket, onPayNow }) {
+function BookingHistory({
+  bookings = [],
+  loading = false,
+  error = '',
+  onViewTicket,
+  onPayNow,
+}) {
   const { tx } = useLanguage();
 
   return (
     <section className="surface-card p-4 lg:col-span-2 mt-6">
-      <p className="section-label mb-4">{tx('Booking History', 'Lịch sử đặt vé')}</p>
+      <p className="section-label mb-4">{tx('My tickets', 'Vé của tôi')}</p>
 
       {loading ? (
         <p className="rounded-md border-base bg-cream px-3 py-4 text-sm text-stone">
@@ -48,78 +55,129 @@ function BookingHistory({ bookings, loading = false, onViewTicket, onPayNow }) {
         </p>
       ) : null}
 
-      {!loading && (!bookings || bookings.length === 0) ? (
+      {!loading && error ? (
+        <p className="rounded-md border-base bg-cream px-3 py-4 text-sm text-rose">
+          {tx(error, 'Không thể tải vé của bạn.')}
+        </p>
+      ) : null}
+
+      {!loading && !error && bookings.length === 0 ? (
         <p className="rounded-md border-base bg-cream px-3 py-4 text-sm text-stone text-center">
           {tx('No booking history.', 'Chưa có lịch sử đặt vé.')}
         </p>
       ) : null}
 
-      {!loading && bookings && bookings.length > 0 ? (
+      {!loading && !error && bookings.length > 0 ? (
         <div className="space-y-4">
           {bookings.map((booking) => {
-            const { id, bookingCode, status, totalAmount, showtime, createdAt } = booking;
+            const { id, bookingCode, status, totalAmount, showtime } = booking;
             const movie = showtime?.movie;
-            const startTime = showtime?.publicStartTime ? new Date(showtime.publicStartTime) : null;
-            
             const isSuccess = ['PAID', 'CONFIRMED', 'COMPLETED'].includes(status);
 
             return (
-              <div key={id} className="flex flex-col justify-between gap-4 rounded-xl border border-base bg-paper p-4 shadow-sm md:flex-row md:items-center hover:border-primary/50 transition-colors">
-                <div className="flex gap-4 items-center">
-                  {movie?.posterUrl ? (
-                    <img
-                      src={movie.posterUrl}
-                      alt={movie.title}
-                      className="h-20 w-14 rounded object-cover shadow-sm"
-                    />
-                  ) : (
-                    <div className="h-20 w-14 rounded bg-cream flex items-center justify-center border border-base">
-                      <span className="text-[10px] text-ink/40">No Img</span>
-                    </div>
-                  )}
-                  <div className="flex flex-col">
-                    <h4 className="font-semibold text-ink line-clamp-1">{movie?.title || 'Unknown Movie'}</h4>
-                    <p className="text-xs text-ink/70 mt-1">
-                      {startTime ? `${startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${startTime.toLocaleDateString('vi-VN')}` : 'N/A'}
-                    </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-md border ${getStatusColor(status)}`}>
-                        {tx(status, getStatusText(status))}
-                      </span>
-                      {bookingCode && (
-                        <span className="text-[11px] font-medium text-ink/50">
-                          Mã: {bookingCode}
+              <div
+                key={id}
+                className="rounded-xl border border-base bg-paper p-4 shadow-sm transition-colors hover:border-primary/50"
+              >
+                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                  <div className="flex items-center gap-4">
+                    {movie?.posterUrl ? (
+                      <img
+                        src={movie.posterUrl}
+                        alt={movie.title}
+                        className="h-20 w-14 rounded object-cover shadow-sm"
+                      />
+                    ) : (
+                      <div className="flex h-20 w-14 items-center justify-center rounded border border-base bg-cream">
+                        <span className="text-[10px] text-ink/40">No Img</span>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col">
+                      <h4 className="line-clamp-1 font-semibold text-ink">
+                        {movie?.title || showtime?.movie?.title || 'Unknown Movie'}
+                      </h4>
+                      <p className="mt-1 text-xs text-ink/70">
+                        {showtime?.publicStartTime ? formatDate(showtime.publicStartTime) : 'N/A'}
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className={`rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${getStatusColor(status)}`}>
+                          {tx(status, getStatusText(status))}
                         </span>
-                      )}
-                      <span className="text-sm font-bold text-primary ml-auto">
-                        {formatCurrency(totalAmount)}
-                      </span>
+                        {bookingCode ? (
+                          <span className="text-[11px] font-medium text-ink/50">
+                            Mã: {bookingCode}
+                          </span>
+                        ) : null}
+                        <span className="text-sm font-bold text-primary">
+                          {formatCurrency(totalAmount)}
+                        </span>
+                      </div>
                     </div>
+                  </div>
+
+                  <div className="flex flex-shrink-0 flex-col items-center gap-2 sm:flex-row md:ml-auto">
+                    {status === 'PENDING' && onPayNow ? (
+                      <button
+                        type="button"
+                        onClick={() => onPayNow(booking)}
+                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#f26b38]/30 bg-[#f26b38]/10 px-3 py-1.5 text-xs font-bold text-[#f26b38] transition-all hover:bg-[#f26b38] hover:text-white hover:shadow-md active:scale-95 sm:w-auto"
+                      >
+                        {tx('Pay Now', 'Thanh toán')}
+                      </button>
+                    ) : null}
+
+                    {onViewTicket ? (
+                      <button
+                        type="button"
+                        onClick={() => onViewTicket(booking)}
+                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#034ea2]/30 bg-[#034ea2]/5 px-3 py-1.5 text-xs font-semibold text-[#034ea2] transition-all hover:bg-[#034ea2] hover:text-white hover:shadow-md active:scale-95 sm:w-auto"
+                      >
+                        {isSuccess ? tx('View Ticket', 'Xem vé') : tx('View Details', 'Xem chi tiết')}
+                      </button>
+                    ) : null}
                   </div>
                 </div>
 
-                <div className="ml-auto flex-shrink-0 flex items-center gap-2 flex-col sm:flex-row">
-                  {status === 'PENDING' && onPayNow && (
-                    <button
-                      type="button"
-                      onClick={() => onPayNow(booking)}
-                      className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 rounded-lg border border-[#f26b38]/30 bg-[#f26b38]/10 px-3 py-1.5 text-xs font-bold text-[#f26b38] transition-all hover:bg-[#f26b38] hover:text-white hover:shadow-md active:scale-95"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                      {tx('Pay Now', 'Thanh toán')}
-                    </button>
-                  )}
-                  {onViewTicket && (
-                    <button
-                      type="button"
-                      onClick={() => onViewTicket(booking)}
-                      className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 rounded-lg border border-[#034ea2]/30 bg-[#034ea2]/5 px-3 py-1.5 text-xs font-semibold text-[#034ea2] transition-all hover:bg-[#034ea2] hover:text-white hover:shadow-md active:scale-95"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      {isSuccess ? tx('View Ticket', 'Xem vé') : tx('View Details', 'Xem chi tiết')}
-                    </button>
-                  )}
-                </div>
+                {booking.tickets?.some((ticket) => ticket.qrCode) ? (
+                  <div className="mt-4 border-t border-stone/20 pt-4">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-charcoal">
+                      {tx('Your QR tickets', 'Mã QR vé của bạn')}
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {booking.tickets.filter((ticket) => ticket.qrCode).map((ticket) => {
+                        const seatLabel = ticket.seat
+                          ? `${ticket.seat.row}${ticket.seat.number}`
+                          : `#${ticket.seatId}`;
+
+                        return (
+                          <div
+                            key={ticket.id}
+                            className="rounded-md border-base bg-cream/40 p-3 text-center"
+                          >
+                            <p className="mb-2 text-xs font-semibold text-charcoal">
+                              {tx('Seat', 'Ghế')} {seatLabel}
+                            </p>
+                            <QRCodeSVG
+                              value={ticket.qrCode}
+                              size={152}
+                              level="M"
+                              className="mx-auto max-w-full rounded bg-white p-2"
+                            />
+                            <p className="mt-2 break-all font-mono text-[10px] text-stone">
+                              {ticket.qrCode}
+                            </p>
+                            <p className="mt-1 text-[10px] uppercase tracking-wider text-stone">
+                              {ticket.isCheckedIn
+                                ? tx('Checked in', 'Đã soát vé')
+                                : tx('Not checked in', 'Chưa soát vé')}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             );
           })}

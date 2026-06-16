@@ -43,7 +43,7 @@ function StatusIcon({ status }) {
 }
 
 function PaymentResultPage() {
-  const { bookingCode, status, bookingData, loading, error } = usePaymentResultPage();
+  const { status, bookingData, error } = usePaymentResultPage();
 
   const statusConfig = {
     PAID: {

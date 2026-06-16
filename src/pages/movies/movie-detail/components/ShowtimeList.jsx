@@ -21,8 +21,13 @@ function countTotalSessions(showtimesObj) {
  */
 function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectShowtime }) {
   const { tx } = useLanguage();
-  const safeShowtimes =
-    typeof showtimes === "object" && !Array.isArray(showtimes) ? showtimes : {};
+  const safeShowtimes = useMemo(
+    () =>
+      typeof showtimes === "object" && !Array.isArray(showtimes)
+        ? showtimes
+        : {},
+    [showtimes],
+  );
     
   // Extract all unique cinemas
   const cinemas = useMemo(() => {
@@ -53,7 +58,7 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
   const [currentPage, setCurrentPage] = useState(1);
 
   // Auto-select first cinema if not selected
-  useMemo(() => {
+  useEffect(() => {
     if (cinemas.length > 0 && !selectedCinemaId) {
       setSelectedCinemaId(String(cinemas[0].id));
       setCurrentPage(1);
