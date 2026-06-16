@@ -5,8 +5,10 @@ export async function createBooking(payload) {
   return response.data;
 }
 
-export async function getMyBookings() {
-  const response = await axiosInstance.get('/bookings/my-bookings');
+export async function getMyBookings(page = 1, pageSize = 5) {
+  const response = await axiosInstance.get('/bookings/my-bookings', {
+    params: { page, pageSize },
+  });
   return response.data;
 }
 
@@ -20,9 +22,15 @@ export async function getBookedSeatsForShowtime(showtimeId) {
   return response.data;
 }
 
+export async function getConcessions() {
+  const response = await axiosInstance.get('/concessions');
+  return response.data;
+}
+
 export default {
   createBooking,
   getMyBookings,
   holdSeats,
   getBookedSeatsForShowtime,
+  getConcessions,
 };

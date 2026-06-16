@@ -66,6 +66,15 @@ function InlineSeatBooking({
   onBack,
   onToggleSeat,
   onBookTickets,
+  showConfirmModal,
+  onCloseConfirmModal,
+  onConfirmBooking,
+  bookingLoading,
+  concessionProducts,
+  selectedConcessions,
+  onConcessionChange,
+  concessionTotal,
+  grandTotal,
 }) {
   const { tx } = useLanguage();
 
@@ -188,16 +197,88 @@ function InlineSeatBooking({
                 {tx("Price", "Giá")}: {formatCurrency(pricePerSeat)} {priceUnit}
               </p>
             </div>
+          </div>
 
-            <div className="space-y-3 md:text-right">
-              <p className="text-xs font-semibold uppercase tracking-wide text-stone">
-                {tx("Total", "Tổng tiền")}
+          {/* ─── Concession Picker ─── */}
+          {concessionProducts && concessionProducts.length > 0 && (
+            <div className="rounded-xl border-base bg-cream/40 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone mb-3">
+                {tx("Food & Drinks", "Bắp nước kèm theo")}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {concessionProducts.map((product) => {
+                  const qty = selectedConcessions[product.id] || 0;
+                  return (
+                    <div key={product.id} className="flex items-center justify-between gap-3 rounded-lg border border-base bg-white px-3 py-2.5 shadow-sm">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-ink truncate">{product.name}</p>
+                        <p className="text-xs font-medium text-primary">{formatCurrency(product.price)}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => onConcessionChange(product.id, -1)}
+                          disabled={qty === 0}
+                          className="flex h-7 w-7 items-center justify-center rounded-md border border-base bg-gray-50 text-sm font-bold text-ink/60 transition-colors hover:bg-gray-100 disabled:opacity-30"
+                        >
+                          −
+                        </button>
+                        <span className="w-6 text-center text-sm font-semibold text-ink">{qty}</span>
+                        <button
+                          type="button"
+                          onClick={() => onConcessionChange(product.id, 1)}
+                          className="flex h-7 w-7 items-center justify-center rounded-md border border-base bg-[#034ea2]/5 text-sm font-bold text-[#034ea2] transition-colors hover:bg-[#034ea2]/10"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {concessionTotal > 0 && (
+                <p className="mt-3 text-right text-xs text-ink/60">
+                  {tx("Concession subtotal", "Tạm tính bắp nước")}: <span className="font-semibold text-ink">{formatCurrency(concessionTotal)}</span>
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="rounded-xl bg-cream/40 p-4 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone">
+              {tx("Order Summary", "Chi tiết đơn hàng")}
+            </p>
+
+            {/* Seat line */}
+            <div className="flex items-center justify-between text-sm text-ink/80">
+              <span>{tx("Seats", "Ghế")} ({selectedSeatCount}x {formatCurrency(pricePerSeat)})</span>
+              <span className="font-semibold text-ink">{formatCurrency(totalPrice)}</span>
+            </div>
+
+            {/* Concession lines */}
+            {concessionProducts && concessionProducts.filter(p => (selectedConcessions[p.id] || 0) > 0).map((product) => {
+              const qty = selectedConcessions[product.id];
+              return (
+                <div key={product.id} className="flex items-center justify-between text-sm text-ink/80">
+                  <span>{product.name} ({qty}x {formatCurrency(product.price)})</span>
+                  <span className="font-semibold text-ink">{formatCurrency(product.price * qty)}</span>
+                </div>
+              );
+            })}
+
+            {/* Divider + Grand Total */}
+            <div className="pt-3 flex items-center justify-between">
+              <p className="text-sm font-bold uppercase text-ink/70">
+                {tx("Grand Total", "Tổng cộng")}
               </p>
               <p className="text-2xl font-bold text-galaxyBlue">
-                {formatCurrency(totalPrice)}
+                {formatCurrency(grandTotal)}
               </p>
+            </div>
+
+            <div className="flex justify-end">
               <Button
-                className="w-full md:min-w-[160px]"
+                className="w-full md:min-w-[200px]"
                 onClick={onBookTickets}
                 disabled={selectedSeatCount === 0}
               >
@@ -207,6 +288,92 @@ function InlineSeatBooking({
           </div>
         </>
       ) : null}
+
+      {/* ─── Confirm Booking Modal ─── */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden animate-[fadeInUp_0.25s_ease-out]">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#034ea2] to-[#0366d6] px-6 py-5 text-white">
+              <h3 className="text-lg font-bold">{tx('Confirm Booking', 'Xác nhận đặt vé')}</h3>
+              <p className="text-sm text-white/80 mt-1">{tx('Please review your booking details', 'Vui lòng kiểm tra thông tin đặt vé')}</p>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#034ea2]/10 text-[#034ea2]">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div>
+                  <p className="text-xs text-ink/50 font-medium uppercase">{tx('Showtime', 'Suất chiếu')}</p>
+                  <p className="text-sm font-semibold text-ink">{formatShowtimeDateTime(showtime)}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f26b38]/10 text-[#f26b38]">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div>
+                  <p className="text-xs text-ink/50 font-medium uppercase">{tx('Seats', 'Ghế đã chọn')}</p>
+                  <p className="text-sm font-semibold text-ink">
+                    {selectedSeatLabels && selectedSeatLabels.length > 0
+                      ? selectedSeatLabels.join(', ')
+                      : 'N/A'}
+                    <span className="text-ink/50 font-normal ml-1">({selectedSeatLabels?.length || 0} {tx('seats', 'ghế')})</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-gradient-to-r from-[#034ea2]/5 to-[#f26b38]/5 p-4 space-y-2">
+                <div className="flex items-center justify-between text-sm text-ink/70">
+                  <span>{tx('Seats', 'Ghế')} ({selectedSeatLabels?.length || 0}x {formatCurrency(pricePerSeat)})</span>
+                  <span className="font-semibold text-ink">{formatCurrency(totalPrice)}</span>
+                </div>
+                {concessionProducts && concessionProducts.filter(p => (selectedConcessions[p.id] || 0) > 0).map((product) => {
+                  const qty = selectedConcessions[product.id];
+                  return (
+                    <div key={product.id} className="flex items-center justify-between text-sm text-ink/70">
+                      <span>{product.name} ({qty}x {formatCurrency(product.price)})</span>
+                      <span className="font-semibold text-ink">{formatCurrency(product.price * qty)}</span>
+                    </div>
+                  );
+                })}
+                <div className="border-t border-base/50 pt-2 mt-2 flex items-center justify-between">
+                  <p className="text-sm font-bold uppercase text-ink/70">{tx('Grand Total', 'Tổng cộng')}</p>
+                  <p className="text-xl font-bold text-[#034ea2]">{formatCurrency(grandTotal)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex gap-3 px-6 pb-6">
+              <button
+                type="button"
+                onClick={onCloseConfirmModal}
+                disabled={bookingLoading}
+                className="flex-1 rounded-xl border border-base bg-white py-3 text-sm font-semibold text-ink/70 transition-all hover:bg-gray-50 active:scale-[0.98] disabled:opacity-50"
+              >
+                {tx('Cancel', 'Hủy')}
+              </button>
+              <button
+                type="button"
+                onClick={onConfirmBooking}
+                disabled={bookingLoading}
+                className="flex-1 rounded-xl bg-gradient-to-r from-[#f26b38] to-[#fb9440] py-3 text-sm font-bold text-white shadow-lg shadow-[#f26b38]/25 transition-all hover:shadow-xl hover:shadow-[#f26b38]/30 active:scale-[0.98] disabled:opacity-60"
+              >
+                {bookingLoading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    {tx('Processing...', 'Đang xử lý...')}
+                  </span>
+                ) : tx('Confirm Booking', 'Xác nhận đặt vé')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
