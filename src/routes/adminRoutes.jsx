@@ -6,6 +6,7 @@ import ShowtimeManagementPage from '@/pages/admin/showtimes';
 import BookingManagementPage from '@/pages/admin/bookings';
 import UserManagementPage from '@/pages/admin/users';
 import TicketPriceManagementPage from '@/pages/admin/ticket-prices';
+import ConcessionManagementPage from '@/pages/admin/concessions';
 
 const adminRoutes = [
   { element: <DashboardPage />, index: true },
@@ -15,6 +16,7 @@ const adminRoutes = [
   { path: 'ticket-prices', element: <TicketPriceManagementPage /> },
   { path: 'showtimes', element: <ShowtimeManagementPage /> },
   { path: 'bookings', element: <BookingManagementPage /> },
+  { path: 'concessions', element: <ConcessionManagementPage /> },
   { path: 'users', element: <UserManagementPage /> },
 ];
 

@@ -1,34 +1,35 @@
 export const USER_ROLES = {
-  USER: 'USER',
-  ADMIN: 'ADMIN',
+  USER: "USER",
+  ADMIN: "ADMIN",
+  STAFF: "STAFF",
 };
 
 export const AUTH_STORAGE_KEYS = {
-  TOKEN: 'accessToken',
-  USER: 'currentUser',
+  TOKEN: "accessToken",
+  USER: "currentUser",
 };
 
 export const LANGUAGE_STORAGE_KEYS = {
-  LANGUAGE: 'appLanguage',
+  LANGUAGE: "appLanguage",
 };
 
 export const SUPPORTED_LANGUAGES = {
-  EN: 'en',
-  VI: 'vi',
+  EN: "en",
+  VI: "vi",
 };
 
 export const SEAT_STATUS = {
-  AVAILABLE: 'available',
-  SELECTED: 'selected',
-  VIP: 'vip',
-  SOLD: 'sold',
-  RESERVED: 'reserved',
+  AVAILABLE: "available",
+  SELECTED: "selected",
+  VIP: "vip",
+  SOLD: "sold",
+  RESERVED: "reserved",
 };
 
 export const BOOKING_STEPS = {
-  SEAT_SELECTION: 'seat-selection',
-  PAYMENT: 'payment',
-  CONFIRMATION: 'confirmation',
+  SEAT_SELECTION: "seat-selection",
+  PAYMENT: "payment",
+  CONFIRMATION: "confirmation",
 };
 
 export const PAGINATION_DEFAULT = {
