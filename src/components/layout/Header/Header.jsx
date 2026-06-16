@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import useAuth from '@/features/auth/hooks/useAuth';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 import NotificationBell from '@/components/shared/NotificationBell/NotificationBell';
+import { USER_ROLES } from '@/utils/constants';
 
 function Header() {
   const { isAuthenticated, signOut, user } = useAuth();
@@ -27,6 +28,7 @@ function Header() {
 
   const displayName = user?.fullName || user?.email?.split('@')[0] || tx('User', 'Người dùng');
   const initial = displayName.charAt(0).toUpperCase();
+  const canCheckIn = [USER_ROLES.ADMIN, USER_ROLES.STAFF].includes(user?.role);
 
   return (
     <header className="border-base border-b bg-white shadow-sm sticky top-0 z-50">
@@ -53,6 +55,11 @@ function Header() {
               <NavLink to="/movies" className={navClassName}>
                 {tx('Movies', 'Phim')}
               </NavLink>
+              {canCheckIn ? (
+                <NavLink to="/staff/check-in" className={navClassName}>
+                  {tx('Ticket Check-in', 'Soát vé')}
+                </NavLink>
+              ) : null}
             </nav>
           </div>
 
@@ -93,6 +100,15 @@ function Header() {
                         className="block px-4 py-2 text-sm text-ink hover:bg-gray-50 hover:text-galaxyBlue transition-colors"
                       >
                         {tx('Admin Dashboard', 'Quản trị hệ thống')}
+                      </Link>
+                    )}
+                    {canCheckIn && (
+                      <Link
+                        to="/staff/check-in"
+                        onClick={() => setShowDropdown(false)}
+                        className="block px-4 py-2 text-sm font-medium text-galaxyOrange transition-colors hover:bg-orange-50"
+                      >
+                        {tx('Ticket Check-in', 'Soát vé')}
                       </Link>
                     )}
                     <Link 

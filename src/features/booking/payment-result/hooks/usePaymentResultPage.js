@@ -58,7 +58,7 @@ function usePaymentResultPage() {
     intervalRef.current = setInterval(fetchStatus, POLL_INTERVAL_MS);
 
     return () => clearInterval(intervalRef.current);
-  }, [bookingCode, fetchStatus]);
+  }, [bookingCode, fetchStatus, navigate]);
 
   return {
     bookingCode,

@@ -1,0 +1,249 @@
+Bạn là Senior Full-stack Developer chuyên NestJS, TypeORM, React Vite và TailwindCSS.
+
+Tôi đang làm Task 4.4: API & UI Module Soát vé (Check-in) cho hệ thống quản lý rạp chiếu phim.
+
+YÊU CẦU QUAN TRỌNG:
+
+- Không trực tiếp sửa file trong project.
+- Chỉ trả về code và hướng dẫn để tôi tự copy.
+- Trước khi sinh code, hãy đọc và bám sát cấu trúc, convention hiện tại của project.
+- Không refactor hoặc thay đổi những chức năng không liên quan.
+- Không sửa lỗi encoding hoặc format toàn bộ file.
+- Không dùng dấu `...` để lược bỏ code trong những đoạn tôi cần copy.
+- Với file mới: ghi rõ đường dẫn và cung cấp toàn bộ nội dung file.
+- Với file cần sửa: ghi rõ đường dẫn, vị trí thêm/sửa và cung cấp đầy đủ đoạn code cần copy.
+- Giải thích ngắn gọn mục đích của từng thay đổi.
+- Code phải build được và không phá hỏng các route/API hiện có.
+
+==================================================
+BACKEND
+==================================================
+
+Backend root:
+F:/Nam3_Ky2/QLDA/BE/BE-QLDA
+
+Các file liên quan hiện có:
+
+- src/module/ticket/ticket.controller.ts
+- src/module/ticket/ticket.service.ts
+- src/module/ticket/ticket.module.ts
+- src/module/ticket/entities/ticket.entity.ts
+- src/module/ticket/enums/ticket.enum.ts
+- src/core/dto/ApiResponse.dto.ts
+- src/core/exceptions/custom.exception.ts
+- src/core/security/jwt/jwt-auth.guard.ts
+- src/core/security/roles/roles.guard.ts
+- src/core/security/roles/roles.decorator.ts
+
+Ticket entity đã có sẵn:
+
+- qrCode: string
+- isCheckedIn: boolean
+- checkedInAt: Date
+- status: ETicketStatus
+- relations: booking, seat, showtime
+
+Không sửa Ticket entity và không tạo migration cho Task này.
+
+Hãy triển khai API:
+
+POST /tickets/:qrCode/checkin
+
+Phân quyền:
+
+- Bắt buộc đăng nhập bằng JwtAuthGuard.
+- Chỉ ADMIN hoặc STAFF được phép gọi.
+- Dùng RolesGuard và `@Roles(EUserRole.ADMIN, EUserRole.STAFF)` theo convention hiện tại.
+
+Controller gọi method mới trong TicketService, ví dụ:
+
+checkInByQrCode(qrCode: string)
+
+Logic service:
+
+1. Chuẩn hóa mã bằng `qrCode.trim()`.
+2. Tìm ticket theo qrCode.
+3. Load các relation cần thiết để frontend hiển thị:
+   - seat
+   - showtime
+   - showtime.movie
+   - showtime.room
+   - showtime.room.cinema
+   - booking
+4. Nếu không tìm thấy:
+   - HTTP 404
+   - code: `TICKET_NOT_FOUND`
+5. Nếu ticket không có status ACTIVE:
+   - HTTP 400
+   - code: `TICKET_NOT_ACTIVE`
+6. Nếu ticket đã có `isCheckedIn === true`:
+   - HTTP 409 CONFLICT
+   - code: `TICKET_ALREADY_CHECKED_IN`
+7. Cập nhật:
+   - isCheckedIn = true
+   - checkedInAt = new Date()
+8. Không tự động đổi ticket status thành USED vì yêu cầu hiện tại chỉ cập nhật cờ check-in.
+9. Nên dùng conditional/atomic update với điều kiện `isCheckedIn = false` để tránh hai nhân viên quét cùng một vé đồng thời.
+10. Trả về `ApiResponse<Ticket>` chứa ticket sau khi cập nhật và đầy đủ relations.
+
+Response thành công dạng:
+
+{
+  "success": true,
+  "message": "Soát vé thành công",
+  "data": {
+    "id": 1,
+    "qrCode": "TKT-...",
+    "isCheckedIn": true,
+    "checkedInAt": "...",
+    "status": "ACTIVE",
+    "seat": {},
+    "showtime": {},
+    "booking": {}
+  }
+}
+
+Hãy giải thích:
+
+- Vì sao không cần sửa entity/migration.
+- Cách API xử lý vé không tồn tại, vé bị hủy và vé đã check-in.
+- Cách conditional update hạn chế check-in trùng đồng thời.
+
+==================================================
+FRONTEND
+==================================================
+
+Frontend root:
+F:/Nam3_Ky2/QLDA/FE/cinema-management
+
+Frontend hiện dùng:
+
+- React Vite
+- TailwindCSS
+- React Router
+- apiClient tại `src/core/api/apiClient.js`
+- getErrorMessage tại `src/core/utils/errorUtils.js`
+- Toast tại `src/components/ui/Toast`
+- Button và Input tại `src/components/ui`
+- Auth và ProtectedRoute hiện có
+- Alias import `@` trỏ tới `/src`
+
+Hãy tạo trang:
+
+/staff/check-in
+
+Trang phải dành cho STAFF. ADMIN cũng được phép truy cập vì backend cho phép cả ADMIN và STAFF.
+
+Không đặt trang này bên trong `/admin`, vì route `/admin` hiện chỉ dành cho ADMIN.
+
+Các chức năng frontend:
+
+1. Nhân viên có thể nhập mã QR bằng tay.
+2. Nhân viên có thể dùng camera quét QR.
+3. Nút “Xác nhận soát vé” gọi:
+   POST /tickets/:qrCode/checkin
+4. Phải dùng:
+   `encodeURIComponent(qrCode)`
+   khi ghép qrCode vào URL.
+5. Trong lúc gửi request:
+   - Disable input và button.
+   - Không gửi request trùng.
+6. Khi thành công:
+   - Hiển thị Toast thành công.
+   - Hiển thị card thông tin vé:
+     - QR code
+     - tên phim
+     - rạp
+     - phòng
+     - ghế
+     - giờ chiếu
+     - thời gian check-in
+7. Khi thất bại:
+   - Dùng `getErrorMessage`.
+   - Hiển thị lỗi dễ hiểu.
+   - Giữ trang hoạt động để nhân viên có thể thử mã khác.
+8. Camera scanner:
+   - Dùng package `html5-qrcode`.
+   - Dừng hoặc pause scanner sau khi đọc được một mã để tránh gọi API liên tục.
+   - Cleanup camera khi component unmount.
+   - Nếu camera bị từ chối quyền, nhập mã tay vẫn phải hoạt động.
+9. Giao diện responsive, dùng Tailwind và các component/style hiện có.
+10. Dùng `useLanguage` và `tx(en, vi)` theo convention project khi hợp lý.
+
+Hãy tổ chức theo cấu trúc hiện tại:
+
+File mới dự kiến:
+
+- src/features/staff/check-in/services/ticketCheckInService.js
+- src/features/staff/check-in/hooks/useTicketCheckIn.js
+- src/pages/staff/check-in/components/QrScanner.jsx
+- src/pages/staff/check-in/CheckInPage.jsx
+- src/pages/staff/check-in/index.js
+
+File cần sửa dự kiến:
+
+- src/utils/constants.js
+  - Thêm `STAFF: 'STAFF'` vào USER_ROLES.
+  - Không thay đổi các role hiện có.
+
+- src/components/shared/ProtectedRoute/ProtectedRoute.jsx
+  - Hỗ trợ thêm prop `roles` là array.
+  - Vẫn phải tương thích với prop `role` hiện tại để không phá route admin.
+
+- src/routes/index.jsx
+  - Thêm route `/staff/check-in`.
+  - Bảo vệ route bằng ADMIN hoặc STAFF.
+  - Không thay đổi các route hiện có.
+
+Không sửa luồng login hoặc tự động redirect sau login trong Task này.
+
+==================================================
+DEPENDENCY VÀ KIỂM TRA
+==================================================
+
+Hãy ghi rõ lệnh cần chạy:
+
+Frontend:
+npm install html5-qrcode
+npm run build
+npm run lint
+
+Backend:
+npm run build
+npm test
+
+Nếu project hiện không có test phù hợp, hãy nói rõ nhưng không tự tạo nhiều test ngoài phạm vi.
+
+==================================================
+ĐỊNH DẠNG CÂU TRẢ LỜI
+==================================================
+
+Trả lời theo đúng thứ tự:
+
+1. Tóm tắt giải pháp.
+2. Danh sách file mới và file cần sửa.
+3. Backend:
+   - Từng file.
+   - Đường dẫn đầy đủ.
+   - Vị trí thêm code.
+   - Code hoàn chỉnh cần copy.
+   - Giải thích.
+4. Frontend:
+   - Từng file.
+   - Đường dẫn đầy đủ.
+   - File mới phải có toàn bộ nội dung.
+   - File sửa phải có đoạn code chính xác cần thay/thêm.
+   - Giải thích.
+5. Các lệnh cài dependency/build/test.
+6. Checklist kiểm thử thủ công:
+   - STAFF check-in thành công.
+   - ADMIN check-in thành công.
+   - CUSTOMER bị chặn.
+   - Mã QR không tồn tại.
+   - Vé đã check-in.
+   - Vé CANCELLED.
+   - Quét camera.
+   - Nhập mã tay.
+   - Reload trang và camera được cleanup.
+
+Không tự ý thêm chức năng ngoài Task 4.4.

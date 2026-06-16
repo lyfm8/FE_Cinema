@@ -4,8 +4,6 @@ import useBooking from '@/features/booking/hooks/useBooking';
 import { prepareCheckout, createPaymentUrl } from '@/features/booking/services/paymentService';
 import axiosInstance from '@/services/axiosInstance';
 
-const CONCESSION_TTL_MS = 5 * 60 * 1000; // đồng bộ 5 phút với backend
-
 function useCheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,6 +20,32 @@ function useCheckoutPage() {
   const [error, setError] = useState('');
   const [secondsLeft, setSecondsLeft] = useState(0);
 
+  const fetchCheckoutData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await prepareCheckout(bookingId);
+      if (response.success) {
+        setCheckoutData(response.data);
+        setSecondsLeft(response.data.secondsRemaining);
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Không thể tải thông tin đặt vé');
+    } finally {
+      setLoading(false);
+    }
+  }, [bookingId]);
+
+  const fetchConcessionProducts = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get('/concessions?pageSize=100');
+      if (response.data?.data) {
+        setConcessionProducts(response.data.data);
+      }
+    } catch {
+      // combo products load failure không block checkout
+    }
+  }, []);
+
   useEffect(() => {
     if (!bookingId) {
       navigate('/');
@@ -29,7 +53,7 @@ function useCheckoutPage() {
     }
     fetchCheckoutData();
     fetchConcessionProducts();
-  }, [bookingId]);
+  }, [bookingId, fetchCheckoutData, fetchConcessionProducts, navigate]);
 
   // Đếm ngược timeout 5 phút
   useEffect(() => {
@@ -52,43 +76,20 @@ function useCheckoutPage() {
     return () => clearInterval(interval);
   }, [checkoutData?.expiredAt]);
 
-  const fetchCheckoutData = async () => {
-    try {
-      setLoading(true);
-      const response = await prepareCheckout(bookingId);
-      if (response.success) {
-        setCheckoutData(response.data);
-        setSecondsLeft(response.data.secondsRemaining);
-      }
-    } catch (err) {
-      setError(err?.response?.data?.message || 'Không thể tải thông tin đặt vé');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchConcessionProducts = async () => {
-    try {
-      const response = await axiosInstance.get('/concessions?pageSize=100');
-      if (response.data?.data) {
-        setConcessionProducts(response.data.data);
-      }
-    } catch {
-      // combo products load failure không block checkout
-    }
-  };
-
   const updateCombo = useCallback((productId, delta) => {
     setSelectedCombos(prev => {
       const current = prev[productId] || 0;
-      const next = Math.max(0, current + delta);
+      const product = concessionProducts.find(item => item.id === productId);
+      const maxQuantity = Number(product?.stockQuantity ?? 0);
+      const next = Math.min(maxQuantity, Math.max(0, current + delta));
       if (next === 0) {
-        const { [productId]: _, ...rest } = prev;
-        return rest;
+        const nextCombos = { ...prev };
+        delete nextCombos[productId];
+        return nextCombos;
       }
       return { ...prev, [productId]: next };
     });
-  }, []);
+  }, [concessionProducts]);
 
   const comboTotal = useMemo(() => {
     return concessionProducts.reduce((sum, product) => {

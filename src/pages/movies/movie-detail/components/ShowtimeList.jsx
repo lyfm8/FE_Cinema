@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Spinner from "@/components/ui/Spinner";
 import useLanguage from "@/features/i18n/hooks/useLanguage";
 
@@ -20,8 +20,13 @@ function countTotalSessions(showtimesObj) {
  */
 function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectShowtime }) {
   const { tx } = useLanguage();
-  const safeShowtimes =
-    typeof showtimes === "object" && !Array.isArray(showtimes) ? showtimes : {};
+  const safeShowtimes = useMemo(
+    () =>
+      typeof showtimes === "object" && !Array.isArray(showtimes)
+        ? showtimes
+        : {},
+    [showtimes],
+  );
     
   // Extract all unique cinemas
   const cinemas = useMemo(() => {
@@ -37,7 +42,7 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
   const [selectedCinemaId, setSelectedCinemaId] = useState("");
 
   // Auto-select first cinema if not selected
-  useMemo(() => {
+  useEffect(() => {
     if (cinemas.length > 0 && !selectedCinemaId) {
       setSelectedCinemaId(String(cinemas[0].id));
     }

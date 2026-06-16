@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import useBooking from '@/features/booking/hooks/useBooking';
 import { SEAT_STATUS } from '@/utils/constants';
@@ -17,14 +17,7 @@ function useSeatSelectionPage() {
   
   const { unavailableSeatIds } = useSeatSocket(showtimeId);
 
-  useEffect(() => {
-    if (showtimeId) {
-      setShowtime(showtimeId);
-      fetchShowtimeSeats();
-    }
-  }, [setShowtime, showtimeId]);
-
-  const fetchShowtimeSeats = async () => {
+  const fetchShowtimeSeats = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get(`/showtimes/${showtimeId}`);
@@ -37,7 +30,14 @@ function useSeatSelectionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showtimeId]);
+
+  useEffect(() => {
+    if (showtimeId) {
+      setShowtime(showtimeId);
+      fetchShowtimeSeats();
+    }
+  }, [fetchShowtimeSeats, setShowtime, showtimeId]);
 
   const seats = useMemo(() => {
     if (!rawSeats || rawSeats.length === 0) return [];

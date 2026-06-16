@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getProfile, updateProfile } from '@/features/profile/services/userService';
+import { getMyBookings } from '@/features/booking/services/bookingService';
 import { AUTH_STORAGE_KEYS } from '@/utils/constants';
 
 const DEFAULT_PROFILE = {
@@ -85,6 +86,8 @@ function useProfilePage() {
       : DEFAULT_PROFILE,
   );
   const [loading, setLoading] = useState(true);
+  const [bookings, setBookings] = useState([]);
+  const [bookingsError, setBookingsError] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
@@ -96,18 +99,28 @@ function useProfilePage() {
     async function loadProfileData() {
       setLoading(true);
       setError('');
+      setBookingsError('');
 
-      const profileResult = await getProfile();
+      const [profileResult, bookingsResult] = await Promise.allSettled([
+        getProfile(),
+        getMyBookings(),
+      ]);
 
       if (!mounted) {
         return;
       }
 
-      if (profileResult && profileResult.status !== 'rejected') {
-        const profileData = profileResult.data || profileResult;
+      if (profileResult.status === 'fulfilled') {
+        const profileData = profileResult.value?.data || profileResult.value;
         setProfile(normalizeProfile(profileData));
       } else {
         setError('Unable to load complete profile data.');
+      }
+
+      if (bookingsResult.status === 'fulfilled') {
+        setBookings(bookingsResult.value?.data || []);
+      } else {
+        setBookingsError('Unable to load booking history.');
       }
 
       setLoading(false);
@@ -157,8 +170,10 @@ function useProfilePage() {
 
   return {
     profile,
+    bookings,
     loading,
     error,
+    bookingsError,
     saving,
     saveMessage,
     saveError,

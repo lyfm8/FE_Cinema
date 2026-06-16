@@ -61,6 +61,10 @@ function TimerBadge({ secondsLeft, formatTime }) {
 }
 
 function ComboCard({ product, quantity, onIncrease, onDecrease }) {
+  const stockQuantity = Number(product.stockQuantity ?? 0);
+  const isOutOfStock = stockQuantity === 0;
+  const isMaxSelected = quantity >= stockQuantity;
+
   return (
     <div
       className="flex items-center justify-between p-4 rounded-2xl"
@@ -83,6 +87,9 @@ function ComboCard({ product, quantity, onIncrease, onDecrease }) {
         </div>
         <div>
           <p className="text-sm font-semibold" style={{ color: '#f0ede8' }}>{product.name}</p>
+          <p className="text-[11px]" style={{ color: isOutOfStock ? '#ef4444' : '#8b9bbf' }}>
+            {isOutOfStock ? 'Hết hàng' : `Còn ${stockQuantity}`}
+          </p>
           <p className="text-xs" style={{ color: '#f26b38' }}>
             {product.price.toLocaleString('vi-VN')}₫
           </p>
@@ -107,8 +114,13 @@ function ComboCard({ product, quantity, onIncrease, onDecrease }) {
         </span>
         <button
           onClick={onIncrease}
+          disabled={isOutOfStock || isMaxSelected}
           className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
-          style={{ background: 'rgba(242,107,56,0.2)', color: '#f26b38' }}
+          style={{
+            background: isOutOfStock || isMaxSelected ? 'rgba(255,255,255,0.06)' : 'rgba(242,107,56,0.2)',
+            color: isOutOfStock || isMaxSelected ? '#666' : '#f26b38',
+            cursor: isOutOfStock || isMaxSelected ? 'not-allowed' : 'pointer',
+          }}
         >
           +
         </button>

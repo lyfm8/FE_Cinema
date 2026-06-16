@@ -175,7 +175,10 @@ function SeatMap({
   const enableCurvedRows =
     normalizedType === "imax" && !normalizedFormat.includes("2D");
   const theme = ROOM_THEMES[normalizedType] || ROOM_THEMES.standard;
-  const normalizedSeats = Array.isArray(seats) ? seats : [];
+  const normalizedSeats = useMemo(
+    () => (Array.isArray(seats) ? seats : []),
+    [seats],
+  );
   const derivedRows = new Set(normalizedSeats.map((seat) => seat.row).filter(Boolean)).size;
   const derivedColumns = Math.max(
     ...normalizedSeats.map((seat) => Number(seat.column) || 0),

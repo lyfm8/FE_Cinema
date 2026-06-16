@@ -1,7 +1,7 @@
 import TicketCard from '@/pages/booking/confirmation/components/TicketCard';
-import QRCode from '@/pages/booking/confirmation/components/QRCode';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 import useConfirmationPage from '@/features/booking/confirmation/hooks/useConfirmationPage';
+import { Link } from 'react-router-dom';
 
 function ConfirmationPage() {
   const { tx } = useLanguage();
@@ -22,7 +22,12 @@ function ConfirmationPage() {
           )}
         </p>
         <TicketCard seats={selectedSeats} />
-        <QRCode />
+        <Link
+          to="/profile"
+          className="inline-flex rounded-md bg-galaxyOrange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
+        >
+          {tx('View my QR tickets', 'Xem mã QR vé của tôi')}
+        </Link>
       </section>
     </div>
   );
