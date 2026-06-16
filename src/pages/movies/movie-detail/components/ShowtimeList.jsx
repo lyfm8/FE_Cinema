@@ -82,7 +82,7 @@ function ShowtimeList({ showtimes = {}, loading = false, error = null, onSelectS
   const days = Object.keys(filteredShowtimes);
 
   // Pagination logic
-  const itemsPerPage = 3;
+  const itemsPerPage = 7;
   const totalPages = Math.ceil(days.length / itemsPerPage);
   const paginatedDays = days.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
