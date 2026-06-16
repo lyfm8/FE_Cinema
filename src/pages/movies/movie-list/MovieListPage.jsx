@@ -1,20 +1,27 @@
+import React, { useEffect } from 'react';
 import MovieFilter from '@/pages/movies/movie-list/components/MovieFilter';
 import MovieGrid from '@/pages/movies/movie-list/components/MovieGrid';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 import useMovieListPage from '@/features/movies/movie-list/hooks/useMovieListPage';
 
 function MovieListPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const { tx } = useLanguage();
   const {
     loading,
     error,
     keyword,
+    selectedGenre,
     filteredMovies,
     highlightedGenres,
     page,
     totalPages,
     paginatedMovies,
     setKeyword,
+    setSelectedGenre,
     nextPage,
     prevPage,
   } = useMovieListPage();
@@ -30,18 +37,13 @@ function MovieListPage() {
         </div>
       </div>
 
-      <div className="surface-card p-4">
-        <p className="section-label mb-3">{tx('Popular Genres', 'Thể loại phổ biến')}</p>
-        <div className="flex flex-wrap gap-2">
-          {highlightedGenres.map((genre) => (
-            <span key={genre} className="rounded-full border-base bg-cream px-3 py-1 text-xs text-stone">
-              {genre}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <MovieFilter keyword={keyword} onKeywordChange={setKeyword} />
+      <MovieFilter 
+        keyword={keyword} 
+        onKeywordChange={setKeyword} 
+        selectedGenre={selectedGenre}
+        onGenreChange={setSelectedGenre}
+        genres={highlightedGenres}
+      />
 
       {error ? <p className="text-xs text-rose">{tx(error, 'Không thể tải phim từ API. Đang hiển thị dữ liệu mẫu.')}</p> : null}
 

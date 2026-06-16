@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import useLanguage from "@/features/i18n/hooks/useLanguage";
@@ -116,12 +116,20 @@ function RegisterForm({
           : tx("Create account", "Tạo tài khoản")}
       </Button>
 
-      <p className="mt-4 text-right text-xs text-stone">
-        {tx("Already have an account?", "Đã có tài khoản?")}{" "}
-        <Link to="/login" className="text-ink underline">
-          {tx("Login", "Đăng nhập")}
+      <div className="mt-4 flex items-center justify-end text-xs text-stone">
+        <p>
+          {tx("Already have an account?", "Đã có tài khoản?")}{" "}
+          <Link to="/login" className="text-ink underline">
+            {tx("Login", "Đăng nhập")}
+          </Link>
+        </p>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-stone-200/50 text-center">
+        <Link to="/" className="text-sm text-stone hover:text-ink transition-colors inline-flex items-center justify-center gap-2">
+          <span>&larr;</span> {tx('Back to Home', 'Quay về trang chủ')}
         </Link>
-      </p>
+      </div>
     </form>
   );
 }

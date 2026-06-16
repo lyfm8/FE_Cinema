@@ -1,16 +1,13 @@
 import HeroBanner from '@/pages/home/components/HeroBanner';
 import QuickBooking from '@/pages/home/components/QuickBooking';
 import NowShowingSection from '@/pages/home/components/NowShowingSection';
-import ComingSoonSection from '@/pages/home/components/ComingSoonSection';
 import useHomePage from '@/features/home/hooks/useHomePage';
 import Spinner from '@/components/ui/Spinner';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 
 function HomePage() {
   const {
-    movies,
-    nowShowing,
-    comingSoon,
+    genreSections,
     featuredMovies,
     loading,
     error,
@@ -53,15 +50,14 @@ function HomePage() {
       {/* Hero Banner — Full width */}
       <HeroBanner featuredMovies={featuredMovies} />
 
-      {/* Now Showing */}
-      {nowShowing.length > 0 && (
-        <NowShowingSection movies={nowShowing} />
-      )}
-
-      {/* Coming Soon */}
-      {comingSoon.length > 0 && (
-        <ComingSoonSection movies={comingSoon} />
-      )}
+      {/* Genre Sections */}
+      {genreSections.map((section) => (
+        <NowShowingSection
+          key={section.genre}
+          movies={section.movies}
+          genreName={section.genre}
+        />
+      ))}
 
       {/* Promotions — hidden when empty */}
     </div>
