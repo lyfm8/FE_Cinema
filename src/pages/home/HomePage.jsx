@@ -1,8 +1,6 @@
 import HeroBanner from '@/pages/home/components/HeroBanner';
 import QuickBooking from '@/pages/home/components/QuickBooking';
 import NowShowingSection from '@/pages/home/components/NowShowingSection';
-import PromotionsSection from '@/pages/home/components/PromotionsSection';
-import ComingSoonSection from '@/pages/home/components/ComingSoonSection';
 import useHomePage from '@/features/home/hooks/useHomePage';
 import Spinner from '@/components/ui/Spinner';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
@@ -54,10 +52,10 @@ function HomePage() {
 
       {/* Genre Sections */}
       {genreSections.map((section) => (
-        <NowShowingSection 
-          key={section.genre} 
-          movies={section.movies} 
-          genreName={section.genre} 
+        <NowShowingSection
+          key={section.genre}
+          movies={section.movies}
+          genreName={section.genre}
         />
       ))}
 
