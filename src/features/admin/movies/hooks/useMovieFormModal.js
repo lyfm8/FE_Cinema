@@ -10,6 +10,7 @@ const DEFAULT_VALUES = {
   director: '',
   cast: '',
   releaseDate: '',
+  screeningEndDate: '',
   description: '',
   language: '',
   ageLimit: '',
@@ -46,6 +47,7 @@ function buildInitialValues(movie) {
     director: movie.director ?? '',
     cast: movie.cast ?? '',
     releaseDate: toDateInputValue(movie.releaseDate),
+    screeningEndDate: toDateInputValue(movie.screeningEndDate),
     description: movie.description ?? '',
     language: movie.language ?? '',
     ageLimit: movie.ageLimit !== undefined && movie.ageLimit !== null ? String(movie.ageLimit) : '',
@@ -75,6 +77,10 @@ function validateMovieForm(values, requirePoster) {
 
   if (!values.releaseDate) {
     errors.releaseDate = 'Release date is required.';
+  }
+
+  if (!values.screeningEndDate) {
+    errors.screeningEndDate = 'Screening end date is required.';
   }
 
   if (!values.language.trim()) {

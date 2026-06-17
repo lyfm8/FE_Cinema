@@ -77,6 +77,13 @@ function MovieFormModal({ open, mode = 'create', movie = null, onClose, onSubmit
             error={errors.releaseDate}
           />
           <Input
+            type="date"
+            label={tx('Screening end date', 'Ngày kết thúc chiếu')}
+            value={values.screeningEndDate}
+            onChange={handleValueChange('screeningEndDate')}
+            error={errors.screeningEndDate}
+          />
+          <Input
             label={tx('Language', 'Ngôn ngữ')}
             value={values.language}
             onChange={handleValueChange('language')}
