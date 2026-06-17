@@ -20,7 +20,7 @@ function NotificationBell() {
     const fetchInitialData = async () => {
       try {
         const countRes = await notificationService.getUnreadCount();
-        setUnreadCount(countRes.data || 0);
+        setUnreadCount(countRes.data?.count || 0);
 
         const listRes = await notificationService.getAllNotifications();
         // Giả sử listRes.data chứa mảng thông báo
@@ -40,18 +40,29 @@ function NotificationBell() {
       return;
     }
 
-    // Kết nối và join room
+    const onConnect = () => {
+      socket.emit('join-notification', { userId: user.id });
+    };
+
+    // Kết nối và lắng nghe sự kiện connect để join room
+    socket.on('connect', onConnect);
     socket.connect();
-    socket.emit('join-notification', { userId: user.id });
+
+    // Nếu socket đã connect từ trước (do re-render)
+    if (socket.connected) {
+      onConnect();
+    }
 
     // Lắng nghe thông báo mới
     socket.on('new-notification', (newNoti) => {
       console.log('Nhận thông báo mới:', newNoti);
       setNotifications(prev => [newNoti, ...prev]);
       setUnreadCount(prev => prev + 1);
+      setIsOpen(true); // Nổi popup
     });
 
     return () => {
+      socket.off('connect', onConnect);
       socket.off('new-notification');
       socket.emit('leave-notification', { userId: user.id });
       socket.disconnect();
