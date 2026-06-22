@@ -3,6 +3,7 @@ import Button from '@/components/ui/Button';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 import { getConcessions } from '@/features/booking/services/bookingService';
 import { useState, useEffect } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
 function formatCurrency(amount) {
   if (typeof amount !== 'number') return amount;
@@ -50,8 +51,7 @@ function ETicketModal({ isOpen, booking, onClose }) {
   }
   const seatsString = seatLabels.filter(Boolean).join(', ') || 'N/A';
 
-  // QR Code URL (using free API)
-  const qrCodeUrl = bookingCode ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${bookingCode}` : '';
+  const qrTickets = tickets.filter((ticket) => ticket.qrCode);
 
   return (
     <Modal
@@ -62,13 +62,46 @@ function ETicketModal({ isOpen, booking, onClose }) {
     >
       <div className="flex flex-col items-center space-y-6 pb-2">
         {/* QR Code Section */}
-        <div className="flex flex-col items-center rounded-xl bg-white p-4 shadow-sm border border-base">
-          {qrCodeUrl ? (
-            <img src={qrCodeUrl} alt="QR Code" className="h-[150px] w-[150px] object-contain" />
+        <div className="w-full rounded-xl bg-white p-4 shadow-sm border border-base">
+          <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-ink/50">
+            {tx('Ticket QR codes', 'Mã QR từng vé')}
+          </p>
+
+          {qrTickets.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {qrTickets.map((ticket) => {
+                const seatLabel = ticket.seat?.label || `${ticket.seat?.row || ''}${ticket.seat?.number || ticket.seat?.column || ''}`;
+
+                return (
+                  <div key={ticket.id} className="flex flex-col items-center rounded-lg border border-base bg-cream/40 p-3">
+                    <p className="mb-2 text-xs font-semibold text-ink">
+                      {tx('Seat', 'Ghế')} {seatLabel || `#${ticket.seatId}`}
+                    </p>
+                    <QRCodeSVG
+                      value={ticket.qrCode}
+                      size={150}
+                      level="M"
+                      className="rounded bg-white p-2"
+                    />
+                    <p className="mt-2 break-all font-mono text-[10px] text-stone">
+                      {ticket.qrCode}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
-            <div className="h-[150px] w-[150px] bg-base/20 animate-pulse rounded"></div>
+            <div className="rounded-md border border-dashed border-base bg-cream px-3 py-4 text-center text-sm text-stone">
+              {tx(
+                'QR codes are available after payment is confirmed.',
+                'Mã QR chỉ có sau khi thanh toán thành công.',
+              )}
+            </div>
           )}
-          <p className="mt-3 text-sm font-medium tracking-widest text-ink">{bookingCode}</p>
+
+          <p className="mt-3 text-center text-xs text-stone">
+            {tx('Booking code', 'Mã đặt vé')}: {bookingCode}
+          </p>
         </div>
 
         {/* Ticket Details */}

@@ -34,18 +34,8 @@ function useTicketCheckIn(tx) {
     setError("");
   }, []);
 
-  const handleScannedCode = useCallback((decodedText) => {
-    if (submittingRef.current) return;
-
-    setQrCode(String(decodedText || "").trim());
-    setError("");
-  }, []);
-
-  const handleCheckIn = async (event) => {
-    event.preventDefault();
-
-    const normalizedQrCode = qrCode.trim();
-
+  const checkInByCode = useCallback(async (rawQrCode) => {
+    const normalizedQrCode = String(rawQrCode || "").trim();
     if (!normalizedQrCode) {
       const message = tx(
         "Please enter or scan a QR code.",
@@ -85,7 +75,23 @@ function useTicketCheckIn(tx) {
       submittingRef.current = false;
       setSubmitting(false);
     }
-  };
+  }, [showToast, tx]);
+
+  const handleScannedCode = useCallback((decodedText) => {
+    const normalizedQrCode = String(decodedText || "").trim();
+    setQrCode(normalizedQrCode);
+    setError("");
+
+    if (normalizedQrCode) {
+      showToast(tx("QR code scanned. Checking in...", "Đã quét mã QR. Đang soát vé..."));
+      void checkInByCode(normalizedQrCode);
+    }
+  }, [checkInByCode, showToast, tx]);
+
+  const handleCheckIn = useCallback((event) => {
+    event.preventDefault();
+    void checkInByCode(qrCode);
+  }, [checkInByCode, qrCode]);
 
   return {
     qrCode,
