@@ -141,6 +141,200 @@ function ComboCard({ product, quantity, onIncrease, onDecrease }) {
   );
 }
 
+/* ── Loyalty Points Section ── */
+function LoyaltySection({
+  loyaltyInfo,
+  concessionProducts,
+  pointsInputValue,
+  redeemConcessionId,
+  pointsDiscountAmount,
+  comboRedeemAmount,
+  actualPointsUsed,
+  estimatedPointsEarned,
+  onPointsInputChange,
+  onUseAllPoints,
+  onRedeemCombo,
+  subTotal,
+}) {
+  if (!loyaltyInfo) return null;
+
+  const { loyaltyPoints } = loyaltyInfo;
+  const maxDiscountPoints = Math.floor(subTotal * 0.20);
+  const hasPoints = loyaltyPoints > 0;
+
+  return (
+    <div
+      className="checkout-card rounded-2xl border overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
+        borderColor: 'rgba(234,179,8,0.3)',
+        animationDelay: '0.12s',
+      }}
+    >
+      {/* Header */}
+      <div className="px-6 pt-5 pb-3 flex items-center justify-between">
+        <h2 className="font-semibold text-base flex items-center gap-2.5" style={{ color: '#92400e' }}>
+          <span
+            className="flex items-center justify-center w-8 h-8 rounded-lg"
+            style={{ background: 'rgba(234,179,8,0.2)', color: '#d97706' }}
+          >
+            ⭐
+          </span>
+          Điểm tích lũy
+        </h2>
+        <div className="text-right">
+          <p className="text-xs" style={{ color: '#92400e' }}>Số điểm hiện có</p>
+          <p className="font-bold text-lg" style={{ color: '#d97706' }}>
+            {loyaltyPoints.toLocaleString('vi-VN')} điểm
+          </p>
+        </div>
+      </div>
+
+      <div className="px-6 pb-5 space-y-4">
+        {!hasPoints && (
+          <div className="text-sm rounded-xl px-4 py-3" style={{ background: 'rgba(234,179,8,0.1)', color: '#92400e' }}>
+            💡 Bạn chưa có điểm tích lũy. Mua vé hôm nay để nhận{' '}
+            <strong>{estimatedPointsEarned.toLocaleString()}</strong> điểm!
+          </div>
+        )}
+
+        {hasPoints && (
+          <>
+            {/* Option 1: Giảm giá trực tiếp */}
+            <div>
+              <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: '#92400e' }}>
+                Dùng điểm giảm giá đơn hàng (tối đa 20%)
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={Math.min(loyaltyPoints, maxDiscountPoints)}
+                    value={pointsInputValue}
+                    onChange={e => onPointsInputChange(e.target.value)}
+                    disabled={!!redeemConcessionId}
+                    placeholder={`Tối đa ${Math.min(loyaltyPoints, maxDiscountPoints).toLocaleString()} điểm`}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm border outline-none transition-all"
+                    style={{
+                      borderColor: redeemConcessionId ? '#d1d5db' : 'rgba(234,179,8,0.5)',
+                      background: redeemConcessionId ? '#f9fafb' : '#fffbeb',
+                      color: '#92400e',
+                      opacity: redeemConcessionId ? 0.5 : 1,
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={onUseAllPoints}
+                  disabled={!!redeemConcessionId}
+                  className="shrink-0 px-3 py-2.5 rounded-xl text-xs font-bold border transition-all"
+                  style={{
+                    borderColor: redeemConcessionId ? '#d1d5db' : 'rgba(234,179,8,0.6)',
+                    background: redeemConcessionId ? '#f9fafb' : 'rgba(234,179,8,0.15)',
+                    color: redeemConcessionId ? '#9ca3af' : '#d97706',
+                    cursor: redeemConcessionId ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  Dùng tối đa
+                </button>
+              </div>
+              {pointsDiscountAmount > 0 && !redeemConcessionId && (
+                <p className="text-xs mt-1.5 font-medium" style={{ color: '#15803d' }}>
+                  ✓ Tiết kiệm {pointsDiscountAmount.toLocaleString('vi-VN')}₫ từ {actualPointsUsed.toLocaleString()} điểm
+                </p>
+              )}
+            </div>
+
+            {/* Divider */}
+            {concessionProducts.length > 0 && (
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px" style={{ background: 'rgba(234,179,8,0.3)' }} />
+                <span className="text-xs font-semibold" style={{ color: '#b45309' }}>HOẶC</span>
+                <div className="flex-1 h-px" style={{ background: 'rgba(234,179,8,0.3)' }} />
+              </div>
+            )}
+
+            {/* Option 2: Đổi combo */}
+            {concessionProducts.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: '#92400e' }}>
+                  Đổi điểm lấy combo bắp nước (free)
+                </p>
+                <div className="space-y-2">
+                  {concessionProducts.map(product => {
+                    const canRedeem = loyaltyPoints >= product.price;
+                    const isSelected = redeemConcessionId === product.id;
+                    return (
+                      <button
+                        key={product.id}
+                        onClick={() => canRedeem && onRedeemCombo(product.id)}
+                        disabled={!canRedeem}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all text-left"
+                        style={{
+                          borderColor: isSelected ? '#d97706' : canRedeem ? 'rgba(234,179,8,0.4)' : '#e5e7eb',
+                          background: isSelected ? 'rgba(234,179,8,0.2)' : canRedeem ? 'rgba(234,179,8,0.06)' : '#f9fafb',
+                          cursor: canRedeem ? 'pointer' : 'not-allowed',
+                          opacity: canRedeem ? 1 : 0.6,
+                          transform: isSelected ? 'scale(1.01)' : 'scale(1)',
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{product.imageUrl ? <img src={product.imageUrl} className="w-7 h-7 rounded object-cover" alt={product.name} /> : '🍿'}</span>
+                          <div>
+                            <p className="text-sm font-semibold" style={{ color: '#92400e' }}>{product.name}</p>
+                            <p className="text-xs" style={{ color: '#b45309' }}>
+                              {product.price.toLocaleString('vi-VN')} điểm
+                              {!canRedeem && (
+                                <span style={{ color: '#ef4444' }}>
+                                  {' '}(cần thêm {(product.price - loyaltyPoints).toLocaleString()} điểm)
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {canRedeem && (
+                            <span className="text-xs px-2 py-1 rounded-lg font-bold"
+                              style={{ background: isSelected ? '#d97706' : 'rgba(234,179,8,0.2)', color: isSelected ? '#fff' : '#b45309' }}>
+                              {isSelected ? '✓ Đã chọn' : 'Chọn'}
+                            </span>
+                          )}
+                          <span className="text-xs line-through" style={{ color: '#9ca3af' }}>
+                            {product.price.toLocaleString('vi-VN')}₫
+                          </span>
+                          <span className="text-xs font-bold" style={{ color: '#16a34a' }}>FREE</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {comboRedeemAmount > 0 && (
+                  <p className="text-xs mt-1.5 font-medium" style={{ color: '#15803d' }}>
+                    ✓ Đổi combo miễn phí, tiết kiệm {comboRedeemAmount.toLocaleString('vi-VN')}₫ ({actualPointsUsed.toLocaleString()} điểm)
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Estimate points earned after purchase */}
+        <div
+          className="rounded-xl px-4 py-3 flex items-center gap-2"
+          style={{ background: 'rgba(234,179,8,0.12)', borderLeft: '3px solid #d97706' }}
+        >
+          <span>🎁</span>
+          <p className="text-xs" style={{ color: '#92400e' }}>
+            Sau khi thanh toán, bạn sẽ nhận được{' '}
+            <strong style={{ color: '#d97706' }}>+{estimatedPointsEarned.toLocaleString()} điểm</strong>
+            {' '}tích lũy (10% giá trị đơn hàng).
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Checkout Page ── */
 function CheckoutPage() {
   const {
@@ -159,6 +353,18 @@ function CheckoutPage() {
     setSelectedMethod,
     handleSubmit,
     formatTime,
+    // Loyalty
+    loyaltyInfo,
+    pointsInputValue,
+    redeemConcessionId,
+    redeemConcessionProduct,
+    pointsDiscountAmount,
+    comboRedeemAmount,
+    actualPointsUsed,
+    estimatedPointsEarned,
+    handlePointsInputChange,
+    handleUseAllPoints,
+    handleRedeemCombo,
   } = useCheckoutPage();
 
   useEffect(() => {
@@ -166,6 +372,8 @@ function CheckoutPage() {
   }, []);
 
   const selectedMethodObj = PAYMENT_METHODS.find(m => m.id === selectedMethod);
+
+  const subTotal = ticketPrice + comboTotal - (checkoutData?.discountAmount || 0);
 
   if (loading) {
     return (
@@ -276,6 +484,22 @@ function CheckoutPage() {
                 </div>
               </div>
             </div>
+
+            {/* ── Loyalty Points Section ── */}
+            <LoyaltySection
+              loyaltyInfo={loyaltyInfo}
+              concessionProducts={concessionProducts}
+              pointsInputValue={pointsInputValue}
+              redeemConcessionId={redeemConcessionId}
+              pointsDiscountAmount={pointsDiscountAmount}
+              comboRedeemAmount={comboRedeemAmount}
+              actualPointsUsed={actualPointsUsed}
+              estimatedPointsEarned={estimatedPointsEarned}
+              onPointsInputChange={handlePointsInputChange}
+              onUseAllPoints={handleUseAllPoints}
+              onRedeemCombo={handleRedeemCombo}
+              subTotal={subTotal}
+            />
           </div>
 
           {/* ═══ Right Column – Order Summary ═══ */}
@@ -376,8 +600,32 @@ function CheckoutPage() {
 
                   {checkoutData.discountAmount > 0 && (
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-green-600 font-medium">Giảm giá</span>
+                      <span className="text-green-600 font-medium">Giảm giá (mã KM)</span>
                       <span className="font-semibold text-green-600">−{checkoutData.discountAmount.toLocaleString('vi-VN')}₫</span>
+                    </div>
+                  )}
+
+                  {/* Loyalty discount */}
+                  {pointsDiscountAmount > 0 && !redeemConcessionId && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="font-medium" style={{ color: '#d97706' }}>
+                        ⭐ Điểm tích lũy ({actualPointsUsed.toLocaleString()} điểm)
+                      </span>
+                      <span className="font-semibold" style={{ color: '#d97706' }}>
+                        −{pointsDiscountAmount.toLocaleString('vi-VN')}₫
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Combo redemption */}
+                  {comboRedeemAmount > 0 && redeemConcessionId && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="font-medium" style={{ color: '#d97706' }}>
+                        ⭐ Đổi combo ({actualPointsUsed.toLocaleString()} điểm)
+                      </span>
+                      <span className="font-semibold" style={{ color: '#d97706' }}>
+                        −{comboRedeemAmount.toLocaleString('vi-VN')}₫
+                      </span>
                     </div>
                   )}
                 </div>
@@ -391,6 +639,16 @@ function CheckoutPage() {
                     {grandTotal.toLocaleString('vi-VN')}₫
                   </span>
                 </div>
+
+                {/* Points earned preview */}
+                {estimatedPointsEarned > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(234,179,8,0.08)' }}>
+                    <span className="text-sm">⭐</span>
+                    <p className="text-xs" style={{ color: '#92400e' }}>
+                      Bạn sẽ nhận <strong>+{estimatedPointsEarned.toLocaleString()}</strong> điểm sau khi thanh toán
+                    </p>
+                  </div>
+                )}
 
                 {/* Error */}
                 {error && (
