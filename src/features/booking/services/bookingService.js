@@ -27,10 +27,22 @@ export async function getConcessions() {
   return response.data;
 }
 
+export async function staffHoldSeats(payload) {
+  const response = await axiosInstance.post('/bookings/staff/hold-seats', payload);
+  return response.data;
+}
+
+export async function staffCreateBooking(payload) {
+  const response = await axiosInstance.post('/bookings/staff', payload);
+  return response.data;
+}
+
 export default {
   createBooking,
   getMyBookings,
   holdSeats,
   getBookedSeatsForShowtime,
   getConcessions,
+  staffHoldSeats,
+  staffCreateBooking,
 };

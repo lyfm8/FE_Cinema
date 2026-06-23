@@ -43,7 +43,8 @@ function StatusIcon({ status }) {
 }
 
 function PaymentResultPage() {
-  const { status, bookingData, error } = usePaymentResultPage();
+  const { status, bookingData, error, searchParams } = usePaymentResultPage();
+  const from = searchParams?.get('from');
 
   const statusConfig = {
     PAID: {
@@ -129,30 +130,30 @@ function PaymentResultPage() {
         <div className="flex flex-col gap-3">
           {status === 'PAID' && (
             <a
-              href="/profile"
+              href={from === 'staff' ? "/staff/ticket-sale" : "/profile"}
               className="w-full py-3 rounded-2xl font-bold text-sm text-center block"
               style={{ background: 'linear-gradient(135deg, #f26b38 0%, #fb9440 100%)', color: '#fff' }}
             >
-              Xem vé của tôi
+              {from === 'staff' ? "Tiếp tục bán vé" : "Xem vé của tôi"}
             </a>
           )}
 
           {(status === 'FAILED' || status === 'EXPIRED') && (
             <a
-              href="/"
+              href={from === 'staff' ? "/staff/ticket-sale" : "/"}
               className="w-full py-3 rounded-2xl font-bold text-sm text-center block"
               style={{ background: 'rgba(242,107,56,0.15)', color: '#f26b38', border: '1px solid rgba(242,107,56,0.3)' }}
             >
-              Đặt vé lại
+              {from === 'staff' ? "Bán vé lại" : "Đặt vé lại"}
             </a>
           )}
 
           <a
-            href="/"
+            href={from === 'staff' ? "/staff/dashboard" : "/"}
             className="w-full py-3 rounded-2xl text-sm text-center block"
             style={{ background: 'rgba(255,255,255,0.05)', color: '#8b9bbf', border: '1px solid rgba(255,255,255,0.08)' }}
           >
-            Về trang chủ
+            {from === 'staff' ? "Về Dashboard" : "Về trang chủ"}
           </a>
         </div>
 

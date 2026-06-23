@@ -66,6 +66,7 @@ function usePaymentResultPage() {
     bookingData,
     loading,
     error,
+    searchParams,
   };
 }
 
