@@ -1,30 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getBookings } from '@/features/admin/bookings/services/bookingService';
-import { cinemaService } from '@/features/admin/cinemas/services/cinemaService';
-import { movieService } from '@/features/admin/movies/services/movieService';
+import { dashboardService } from '@/features/admin/dashboard/services/dashboardService';
 
 function formatNumber(value) {
   return new Intl.NumberFormat('vi-VN').format(value);
 }
 
-function getSeatCount(booking) {
-  return Array.isArray(booking?.seatHolds) ? booking.seatHolds.length : 0;
-}
-
 function getResponseArray(response) {
   return Array.isArray(response?.data) ? response.data : [];
-}
-
-function getLastSixMonths() {
-  const now = new Date();
-  return Array.from({ length: 6 }, (_, index) => {
-    const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
-    return {
-      key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-      month: date.toLocaleString('en-US', { month: 'short' }),
-      value: 0,
-    };
-  });
 }
 
 function formatBookingRow(booking) {
@@ -41,32 +24,36 @@ function formatBookingRow(booking) {
  * @param {(en: string, vi: string) => string} tx
  */
 function useDashboard(tx) {
-  const [bookings, setBookings] = useState([]);
-  const [cinemas, setCinemas] = useState([]);
-  const [movies, setMovies] = useState([]);
+  const [recentBookings, setRecentBookings] = useState([]);
+  const [revenueData, setRevenueData] = useState([]);
+  const [moviePerformance, setMoviePerformance] = useState([]);
+  const [summary, setSummary] = useState({ revenue: 0, tickets: 0, cinemas: 0, activeMovies: 0 });
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadDashboardData() {
       try {
-        const [bookingResponse, cinemaResponse, movieResponse] = await Promise.all([
-          getBookings({ page: 1, pageSize: 100 }),
-          cinemaService.getCinemas({ page: 1, pageSize: 100 }),
-          movieService.getMovies({ page: 1, pageSize: 100 }),
+        const [recentBookingResponse, revenueResponse, moviesResponse, summaryResponse] = await Promise.all([
+          getBookings({ page: 1, pageSize: 5 }),
+          dashboardService.getRevenueStatistics('month'),
+          dashboardService.getMoviePerformance(),
+          dashboardService.getSummary(),
         ]);
 
         if (isMounted) {
-          setBookings(getResponseArray(bookingResponse));
-          setCinemas(getResponseArray(cinemaResponse));
-          setMovies(getResponseArray(movieResponse));
+          setRecentBookings(getResponseArray(recentBookingResponse));
+          setRevenueData(getResponseArray(revenueResponse));
+          setMoviePerformance(getResponseArray(moviesResponse));
+          setSummary(summaryResponse?.data || { revenue: 0, tickets: 0, cinemas: 0, activeMovies: 0 });
         }
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
         if (isMounted) {
-          setBookings([]);
-          setCinemas([]);
-          setMovies([]);
+          setRecentBookings([]);
+          setRevenueData([]);
+          setMoviePerformance([]);
+          setSummary({ revenue: 0, tickets: 0, cinemas: 0, activeMovies: 0 });
         }
       }
     }
@@ -79,46 +66,32 @@ function useDashboard(tx) {
   }, []);
 
   const statCards = useMemo(() => {
-    const paidBookings = bookings.filter((booking) => booking.status === 'PAID');
-    const revenue = paidBookings.reduce((sum, booking) => sum + (Number(booking.totalAmount) || 0), 0);
-    const tickets = paidBookings.reduce((sum, booking) => sum + getSeatCount(booking), 0);
-    const activeMovies = movies.filter((movie) =>
-      ['NOW_SHOWING', 'ACTIVE', 'SHOWING'].includes(movie.status),
-    ).length || movies.length;
-
     return [
-      { label: tx('Revenue', 'Doanh thu'), value: formatNumber(revenue) },
-      { label: tx('Tickets', 'Vé bán ra'), value: formatNumber(tickets) },
-      { label: tx('Cinemas', 'Rạp phim'), value: formatNumber(cinemas.length) },
-      { label: tx('Active movies', 'Phim đang chiếu'), value: formatNumber(activeMovies) },
+      { label: tx('Revenue', 'Doanh thu'), value: formatNumber(summary.revenue) },
+      { label: tx('Tickets', 'Vé bán ra'), value: formatNumber(summary.tickets) },
+      { label: tx('Cinemas', 'Rạp phim'), value: formatNumber(summary.cinemas) },
+      { label: tx('Active movies', 'Phim đang chiếu'), value: formatNumber(summary.activeMovies) },
     ];
-  }, [bookings, cinemas.length, movies, tx]);
+  }, [summary, tx]);
 
   const monthlyRevenue = useMemo(() => {
-    const months = getLastSixMonths();
-    const monthByKey = new Map(months.map((month) => [month.key, month]));
-
-    bookings
-      .filter((booking) => booking.status === 'PAID')
-      .forEach((booking) => {
-        const date = new Date(booking.createdAt);
-        if (Number.isNaN(date.getTime())) return;
-
-        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        const month = monthByKey.get(key);
-        if (month) {
-          month.value += Number(booking.totalAmount) || 0;
-        }
-      });
-
-    const maxRevenue = Math.max(...months.map((month) => month.value), 0);
-    if (maxRevenue === 0) return months.map(({ month }) => ({ month, value: 0 }));
-
-    return months.map(({ month, value }) => ({
-      month,
-      value: Math.round((value / maxRevenue) * 100),
-    }));
-  }, [bookings]);
+    if (!revenueData || revenueData.length === 0) return [];
+    
+    // revenueData is expected to be { period: 'YYYY-MM', revenue: number }[]
+    const maxRevenue = Math.max(...revenueData.map((item) => item.revenue), 0);
+    
+    return revenueData.map((item) => {
+      // Convert 'YYYY-MM' to short month name 'Jan', 'Feb', etc.
+      const [year, monthStr] = item.period.split('-');
+      const date = new Date(year, parseInt(monthStr, 10) - 1, 1);
+      const month = date.toLocaleString('en-US', { month: 'short' });
+      
+      return {
+        month,
+        value: maxRevenue > 0 ? Math.round((item.revenue / maxRevenue) * 100) : 0,
+      };
+    });
+  }, [revenueData]);
 
   const recentBookingColumns = useMemo(
     () => [
@@ -132,8 +105,29 @@ function useDashboard(tx) {
   );
 
   const recentBookingRows = useMemo(
-    () => bookings.slice(0, 5).map(formatBookingRow),
-    [bookings],
+    () => recentBookings.map(formatBookingRow),
+    [recentBookings],
+  );
+
+  const movieColumns = useMemo(
+    () => [
+      { key: 'title', label: tx('Movie Title', 'Tên Phim') },
+      { key: 'ticketsSold', label: tx('Tickets Sold', 'Vé Đã Bán') },
+      { key: 'occupancyRate', label: tx('Occupancy Rate', 'Tỷ Lệ Lấp Đầy') },
+      { key: 'revenue', label: tx('Revenue', 'Doanh Thu') },
+    ],
+    [tx],
+  );
+
+  const movieRows = useMemo(
+    () => moviePerformance.map((movie) => ({
+      id: movie.id,
+      title: movie.title,
+      ticketsSold: formatNumber(movie.ticketsSold),
+      occupancyRate: `${movie.occupancyRate}%`,
+      revenue: formatNumber(movie.revenue),
+    })),
+    [moviePerformance],
   );
 
   return {
@@ -141,6 +135,8 @@ function useDashboard(tx) {
     monthlyRevenue,
     recentBookingColumns,
     recentBookingRows,
+    movieColumns,
+    movieRows,
   };
 }
 
