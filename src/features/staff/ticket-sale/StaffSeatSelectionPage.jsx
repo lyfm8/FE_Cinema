@@ -9,12 +9,7 @@ import InlineSeatBooking from '@/pages/movies/movie-detail/components/InlineSeat
 
 // We reuse the normalization functions from InlineSeatBooking here or just import them if they were exported.
 // Since they are not exported, we will duplicate the normalization logic.
-const ROOM_PRICES = {
-  standard: 75000,
-  vip: 120000,
-  imax: 150000,
-  couple: 200000,
-};
+// ROOM_PRICES are now fetched from backend
 
 function normalizeRoomType(value) {
   const normalized = String(value ?? "").toLowerCase();
@@ -69,6 +64,7 @@ function normalizeShowtimeDetail(rawShowtime) {
     roomName: rawShowtime?.room?.name || rawShowtime?.roomName || "",
     format: rawShowtime?.format || "",
     seats,
+    pricePerSeat: rawShowtime?.pricePerSeat,
   };
 }
 
@@ -164,7 +160,7 @@ function StaffSeatSelectionPage() {
     return showtimeDetail.seats.filter((seat) => selectedSeatIdSet.has(seat.seatId));
   }, [showtimeDetail, selectedSeatIdSet]);
   const selectedSeatLabels = useMemo(() => selectedSeatObjects.map((seat) => seat.label), [selectedSeatObjects]);
-  const pricePerSeat = ROOM_PRICES[showtimeDetail?.roomType] ?? ROOM_PRICES.standard;
+  const pricePerSeat = showtimeDetail?.pricePerSeat ?? 75000;
   const totalPrice = selectedSeatObjects.length * pricePerSeat;
 
   const handleConcessionChange = (productId, delta) => {
