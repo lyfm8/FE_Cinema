@@ -10,6 +10,9 @@ function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -22,9 +25,10 @@ function NotificationBell() {
         const countRes = await notificationService.getUnreadCount();
         setUnreadCount(countRes.data?.count || 0);
 
-        const listRes = await notificationService.getAllNotifications();
-        // Giả sử listRes.data chứa mảng thông báo
-        setNotifications(listRes.data || []);
+        const listRes = await notificationService.getAllNotifications(1, 10);
+        const data = listRes.data || [];
+        setNotifications(data);
+        if (data.length < 10) setHasMore(false);
       } catch (error) {
         console.error('Lỗi khi tải thông báo:', error);
       }
@@ -58,7 +62,6 @@ function NotificationBell() {
       console.log('Nhận thông báo mới:', newNoti);
       setNotifications(prev => [newNoti, ...prev]);
       setUnreadCount(prev => prev + 1);
-      setIsOpen(true); // Nổi popup
     });
 
     return () => {
@@ -79,6 +82,30 @@ function NotificationBell() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleScroll = async (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight + 10 && hasMore && !isLoadingMore) {
+      setIsLoadingMore(true);
+      try {
+        const nextPage = page + 1;
+        const res = await notificationService.getAllNotifications(nextPage, 10);
+        const newNotis = res.data || [];
+        
+        if (newNotis.length === 0) {
+          setHasMore(false);
+        } else {
+          setNotifications(prev => [...prev, ...newNotis]);
+          setPage(nextPage);
+          if (newNotis.length < 10) setHasMore(false);
+        }
+      } catch (error) {
+        console.error('Lỗi khi tải thêm thông báo:', error);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    }
+  };
 
   const handleMarkAsRead = async (id) => {
     try {
@@ -143,7 +170,7 @@ function NotificationBell() {
             )}
           </div>
           
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="max-h-[400px] overflow-y-auto" onScroll={handleScroll}>
             {notifications.length === 0 ? (
               <div className="p-4 text-center text-sm text-gray-500 py-8">
                 Bạn chưa có thông báo nào.
@@ -169,6 +196,11 @@ function NotificationBell() {
                   </span>
                 </div>
               ))
+            )}
+            {isLoadingMore && (
+              <div className="p-3 text-center text-xs text-gray-500">
+                Đang tải thêm...
+              </div>
             )}
           </div>
         </div>

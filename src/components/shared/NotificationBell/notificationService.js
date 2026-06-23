@@ -6,8 +6,8 @@ export const notificationService = {
     return response.data;
   },
   
-  getAllNotifications: async () => {
-    const response = await axiosInstance.get('/notifications');
+  getAllNotifications: async (page = 1, limit = 10) => {
+    const response = await axiosInstance.get(`/notifications?page=${page}&pageSize=${limit}`);
     return response.data;
   },
   
