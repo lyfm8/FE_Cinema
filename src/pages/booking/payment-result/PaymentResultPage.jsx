@@ -130,7 +130,7 @@ function PaymentResultPage() {
         <div className="flex flex-col gap-3">
           {status === 'PAID' && (
             <a
-              href={from === 'staff' ? "/staff/ticket-sale" : "/profile"}
+              href={from === 'staff' ? "/staff/ticket-sale" : "/booking-history"}
               className="w-full py-3 rounded-2xl font-bold text-sm text-center block"
               style={{ background: 'linear-gradient(135deg, #f26b38 0%, #fb9440 100%)', color: '#fff' }}
             >
