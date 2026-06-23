@@ -92,8 +92,23 @@ function useCinemaManagement(tx) {
     setFetchError("");
     try {
       const result = await cinemaService.getCinemas({ page: 1, pageSize: 100 });
-      const list = (result.data ?? []).filter(
+      let list = (result.data ?? []).filter(
         (item) => item && !Number.isNaN(Number(item.id)),
+      );
+
+      list = await Promise.all(
+        list.map(async (cinema) => {
+          if (cinema.roomsCount !== undefined) return cinema;
+          if (cinema.Rooms) return { ...cinema, roomsCount: cinema.Rooms.length };
+          if (cinema.rooms) return { ...cinema, roomsCount: cinema.rooms.length };
+          
+          try {
+            const roomsRes = await cinemaService.getRoomsByCinema(cinema.id);
+            return { ...cinema, roomsCount: (roomsRes.data ?? []).length };
+          } catch (error) {
+            return { ...cinema, roomsCount: 0 };
+          }
+        })
       );
 
       setCinemas(list);
@@ -291,13 +306,6 @@ function useCinemaManagement(tx) {
 
     if (!roomForm.name.trim()) {
       setRoomFormError(tx("Room name is required.", "Tên phòng là bắt buộc."));
-      return;
-    }
-
-    if (!Number(roomForm.totalSeats) || Number(roomForm.totalSeats) <= 0) {
-      setRoomFormError(
-        tx("Total seats must be greater than 0.", "Số ghế phải lớn hơn 0."),
-      );
       return;
     }
 

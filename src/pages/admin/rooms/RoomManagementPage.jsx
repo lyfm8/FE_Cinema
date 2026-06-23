@@ -46,7 +46,6 @@ function RoomManagementPage() {
   const roomColumns = [
     { key: "id", label: tx("ID", "Mã") },
     { key: "name", label: tx("Room", "Phòng") },
-    { key: "totalSeats", label: tx("Total Seats", "Số ghế") },
     { key: "roomType", label: tx("Type", "Loại phòng") },
     { key: "status", label: tx("Status", "Trạng thái") },
     { key: "actions", label: tx("Actions", "Hành động") },
@@ -55,7 +54,6 @@ function RoomManagementPage() {
   const roomRows = rooms.map((room) => ({
     id: room.id,
     name: room.name,
-    totalSeats: room.totalSeats,
     roomType: room.roomType,
     status: room.status,
     actions: (
@@ -159,12 +157,6 @@ function RoomManagementPage() {
             label={tx("Room name", "Tên phòng")}
             value={roomForm.name}
             onChange={handleRoomFormChange("name")}
-          />
-          <Input
-            label={tx("Total seats", "Tổng số ghế")}
-            type="number"
-            value={String(roomForm.totalSeats)}
-            onChange={handleRoomFormChange("totalSeats")}
           />
 
           <label className="flex w-full flex-col gap-1">
