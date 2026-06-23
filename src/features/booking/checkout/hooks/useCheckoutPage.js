@@ -4,6 +4,11 @@ import useBooking from '@/features/booking/hooks/useBooking';
 import { prepareCheckout, createPaymentUrl } from '@/features/booking/services/paymentService';
 import axiosInstance from '@/services/axiosInstance';
 
+/** 1 điểm = 1 VNĐ */
+const POINT_VALUE = 1;
+/** Giới hạn giảm giá tối đa bằng điểm: 20% */
+const MAX_DISCOUNT_RATE = 0.20;
+
 function useCheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,6 +24,12 @@ function useCheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [secondsLeft, setSecondsLeft] = useState(0);
+
+  // ── Loyalty points state ──
+  const [loyaltyInfo, setLoyaltyInfo] = useState(null);   // { loyaltyPoints, pointValue, earnRate, maxDiscountRate }
+  const [pointsToUse, setPointsToUse] = useState(0);       // số điểm người dùng muốn dùng (giảm giá tổng)
+  const [redeemConcessionId, setRedeemConcessionId] = useState(null); // ID combo muốn đổi bằng điểm
+  const [pointsInputValue, setPointsInputValue] = useState('');
 
   const fetchCheckoutData = useCallback(async () => {
     try {
@@ -46,6 +57,17 @@ function useCheckoutPage() {
     }
   }, []);
 
+  const fetchLoyaltyInfo = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get('/users/loyalty-info');
+      if (response.data?.success) {
+        setLoyaltyInfo(response.data.data);
+      }
+    } catch {
+      // không block checkout nếu không lấy được điểm
+    }
+  }, []);
+
   useEffect(() => {
     if (!bookingId) {
       navigate('/');
@@ -53,7 +75,8 @@ function useCheckoutPage() {
     }
     fetchCheckoutData();
     fetchConcessionProducts();
-  }, [bookingId, fetchCheckoutData, fetchConcessionProducts, navigate]);
+    fetchLoyaltyInfo();
+  }, [bookingId, fetchCheckoutData, fetchConcessionProducts, fetchLoyaltyInfo, navigate]);
 
   useEffect(() => {
     if (!loading && !checkoutData) {
@@ -110,15 +133,107 @@ function useCheckoutPage() {
     return (checkoutData.totalAmount || 0) + (checkoutData.discountAmount || 0) - backendConcessionsTotal;
   }, [checkoutData]);
 
+  // ── Tính toán điểm tích lũy ──────────────────────────────────────────────
+
+  /** Combo được đổi bằng điểm (nếu có chọn redeemConcessionId) */
+  const redeemConcessionProduct = useMemo(() => {
+    if (!redeemConcessionId) return null;
+    return concessionProducts.find(p => p.id === redeemConcessionId) || null;
+  }, [redeemConcessionId, concessionProducts]);
+
+  /** Số điểm cần để đổi combo đã chọn */
+  const pointsRequiredForCombo = useMemo(() => {
+    return redeemConcessionProduct ? redeemConcessionProduct.price : 0;
+  }, [redeemConcessionProduct]);
+
+  /** Tổng phụ (ticket + combo thường được chọn) trước khi áp điểm */
+  const subTotal = useMemo(() => {
+    return ticketPrice + comboTotal - (checkoutData?.discountAmount || 0);
+  }, [ticketPrice, comboTotal, checkoutData]);
+
+  /** Số tiền được giảm khi dùng điểm giảm giá trực tiếp */
+  const pointsDiscountAmount = useMemo(() => {
+    if (!pointsToUse || pointsToUse <= 0) return 0;
+    const maxDiscount = Math.floor(subTotal * MAX_DISCOUNT_RATE);
+    const requested = Math.floor(pointsToUse * POINT_VALUE);
+    return Math.min(requested, maxDiscount);
+  }, [pointsToUse, subTotal]);
+
+  /** Số tiền combo được đổi bằng điểm (trả free) */
+  const comboRedeemAmount = useMemo(() => {
+    return redeemConcessionProduct ? redeemConcessionProduct.price : 0;
+  }, [redeemConcessionProduct]);
+
+  /** Grand total cuối cùng sau tất cả giảm giá */
   const grandTotal = useMemo(() => {
     if (!checkoutData) return 0;
-    return ticketPrice + comboTotal - (checkoutData.discountAmount || 0);
-  }, [ticketPrice, comboTotal, checkoutData]);
+    const base = ticketPrice + comboTotal - (checkoutData.discountAmount || 0);
+    return Math.max(0, base - pointsDiscountAmount - comboRedeemAmount);
+  }, [ticketPrice, comboTotal, checkoutData, pointsDiscountAmount, comboRedeemAmount]);
+
+  /** Số điểm sẽ thực sự được sử dụng */
+  const actualPointsUsed = useMemo(() => {
+    if (redeemConcessionId) return pointsRequiredForCombo;
+    if (pointsToUse > 0) {
+      const maxDiscount = Math.floor(subTotal * MAX_DISCOUNT_RATE);
+      const requested = Math.floor(pointsToUse * POINT_VALUE);
+      return Math.min(requested, maxDiscount, loyaltyInfo?.loyaltyPoints || 0);
+    }
+    return 0;
+  }, [redeemConcessionId, pointsRequiredForCombo, pointsToUse, subTotal, loyaltyInfo]);
+
+  /** Điểm sẽ được tích sau khi đơn thanh toán thành công */
+  const estimatedPointsEarned = useMemo(() => {
+    return Math.floor(grandTotal * 0.10);
+  }, [grandTotal]);
+
+  const handlePointsInputChange = useCallback((val) => {
+    setPointsInputValue(val);
+    const num = parseInt(val, 10);
+    if (!isNaN(num) && num >= 0) {
+      setPointsToUse(num);
+    } else if (val === '') {
+      setPointsToUse(0);
+    }
+  }, []);
+
+  const handleUseAllPoints = useCallback(() => {
+    if (!loyaltyInfo) return;
+    const maxByRate = Math.floor(subTotal * MAX_DISCOUNT_RATE);
+    const actualUse = Math.min(loyaltyInfo.loyaltyPoints, maxByRate);
+    setPointsToUse(actualUse);
+    setPointsInputValue(String(actualUse));
+    setRedeemConcessionId(null);
+  }, [loyaltyInfo, subTotal]);
+
+  const handleRedeemCombo = useCallback((productId) => {
+    if (redeemConcessionId === productId) {
+      // Bỏ chọn nếu đã chọn rồi
+      setRedeemConcessionId(null);
+    } else {
+      setRedeemConcessionId(productId);
+      setPointsToUse(0);
+      setPointsInputValue('');
+    }
+  }, [redeemConcessionId]);
 
   const handleSubmit = async () => {
     if (!bookingId) return;
     if (secondsLeft === 0) {
       setError('Phiên đặt vé đã hết hạn. Vui lòng bắt đầu lại.');
+      return;
+    }
+
+    // Validate điểm
+    if (redeemConcessionId && loyaltyInfo) {
+      const product = concessionProducts.find(p => p.id === redeemConcessionId);
+      if (product && loyaltyInfo.loyaltyPoints < product.price) {
+        setError(`Không đủ điểm để đổi "${product.name}". Cần ${product.price.toLocaleString()} điểm.`);
+        return;
+      }
+    }
+    if (pointsToUse > 0 && loyaltyInfo && pointsToUse > loyaltyInfo.loyaltyPoints) {
+      setError(`Bạn chỉ có ${loyaltyInfo.loyaltyPoints.toLocaleString()} điểm.`);
       return;
     }
 
@@ -135,15 +250,22 @@ function useCheckoutPage() {
         concessions: concessionsToUpdate
       });
 
-      // 2. Tạo link thanh toán
-      const response = await createPaymentUrl({
+      // 2. Tạo link thanh toán (với thông tin điểm nếu có)
+      const paymentPayload = {
         bookingId: Number(bookingId),
         method: selectedMethod,
-      });
+      };
+
+      if (redeemConcessionId) {
+        paymentPayload.redeemConcessionId = redeemConcessionId;
+      } else if (pointsToUse > 0) {
+        paymentPayload.pointsToUse = actualPointsUsed;
+      }
+
+      const response = await createPaymentUrl(paymentPayload);
 
       if (response.success && response.data?.payUrl) {
         resetBooking();
-        // Frontend chỉ redirect, không xử lý gì thêm
         window.location.href = response.data.payUrl;
       } else {
         setError('Không thể tạo link thanh toán. Vui lòng thử lại.');
@@ -177,6 +299,21 @@ function useCheckoutPage() {
     setSelectedMethod,
     handleSubmit,
     formatTime,
+    // Loyalty
+    loyaltyInfo,
+    pointsToUse,
+    pointsInputValue,
+    redeemConcessionId,
+    redeemConcessionProduct,
+    pointsDiscountAmount,
+    comboRedeemAmount,
+    actualPointsUsed,
+    estimatedPointsEarned,
+    handlePointsInputChange,
+    handleUseAllPoints,
+    handleRedeemCombo,
+    MAX_DISCOUNT_RATE,
+    POINT_VALUE,
   };
 }
 
