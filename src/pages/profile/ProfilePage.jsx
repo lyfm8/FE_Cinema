@@ -1,6 +1,5 @@
 import ProfileInfo from '@/pages/profile/components/ProfileInfo';
 import ChangePasswordForm from '@/pages/profile/components/ChangePasswordForm';
-import BookingHistory from '@/pages/profile/components/BookingHistory';
 import LoyaltyInfoCard from '@/pages/profile/components/LoyaltyInfoCard';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 import useProfilePage from '@/features/profile/hooks/useProfilePage';
@@ -42,9 +41,6 @@ function ProfilePage() {
         <LoyaltyInfoCard profile={profile} />
         <div className="lg:col-span-2 grid gap-6 lg:grid-cols-2 items-start">
            <ChangePasswordForm />
-        </div>
-        <div className="lg:col-span-2">
-          <BookingHistory bookings={bookings} loading={loading} error={bookingsError} />
         </div>
       </div>
     </div>
