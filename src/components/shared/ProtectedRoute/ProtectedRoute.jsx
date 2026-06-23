@@ -1,4 +1,4 @@
-﻿import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import useAuth from "@/features/auth/hooks/useAuth";
 
 /**
@@ -25,6 +25,7 @@ function ProtectedRoute({ children, role, roles = [] }) {
     Array.isArray(roles) && roles.length > 0 ? roles : role ? [role] : [];
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+    console.log("ProtectedRoute redirecting to /. allowedRoles:", allowedRoles, "user.role:", user?.role);
     return <Navigate to="/" replace />;
   }
 

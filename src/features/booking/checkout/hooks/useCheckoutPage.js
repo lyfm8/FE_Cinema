@@ -38,6 +38,14 @@ function useCheckoutPage() {
       if (response.success) {
         setCheckoutData(response.data);
         setSecondsLeft(response.data.secondsRemaining);
+
+        if (response.data.concessions && response.data.concessions.length > 0) {
+          const combos = {};
+          response.data.concessions.forEach(c => {
+            combos[c.productId] = c.quantity;
+          });
+          setSelectedCombos(combos);
+        }
       }
     } catch (err) {
       setError(err?.response?.data?.message || 'Không thể tải thông tin đặt vé');
@@ -120,72 +128,62 @@ function useCheckoutPage() {
     });
   }, [concessionProducts]);
 
-  const comboTotal = useMemo(() => {
-    return concessionProducts.reduce((sum, product) => {
-      const qty = selectedCombos[product.id] || 0;
-      return sum + product.price * qty;
-    }, 0);
-  }, [selectedCombos, concessionProducts]);
+  // ── Gọi API tính toán (Lưu trực tiếp vào CSDL nháp) ────────────────────────
+  const [summary, setSummary] = useState(null);
 
-  const ticketPrice = useMemo(() => {
-    if (!checkoutData) return 0;
-    const backendConcessionsTotal = checkoutData.concessions?.reduce((sum, c) => sum + c.subtotal, 0) || 0;
-    return (checkoutData.totalAmount || 0) + (checkoutData.discountAmount || 0) - backendConcessionsTotal;
-  }, [checkoutData]);
+  useEffect(() => {
+    if (!bookingId || !checkoutData) return;
 
-  // ── Tính toán điểm tích lũy ──────────────────────────────────────────────
+    const timer = setTimeout(async () => {
+      try {
+        const concessionsToUpdate = Object.entries(selectedCombos).map(([productId, quantity]) => ({
+          productId: Number(productId),
+          quantity
+        }));
+        
+        const payload = {
+          concessions: concessionsToUpdate,
+          pointsToUse: redeemConcessionId ? 0 : (pointsToUse || 0),
+          redeemConcessionId: redeemConcessionId || undefined
+        };
+
+        const response = await axiosInstance.put(`/bookings/${bookingId}/concessions`, payload);
+        if (response.data?.success) {
+          setSummary(response.data.data);
+        }
+      } catch (err) {
+        console.error('Lỗi khi cập nhật concessions', err);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [bookingId, checkoutData, selectedCombos, pointsToUse, redeemConcessionId]);
+
+  const backendConcessionsTotal = checkoutData?.concessions?.reduce((sum, c) => sum + c.subtotal, 0) || 0;
+  const initialTicketPrice = (checkoutData?.totalAmount || 0) + (checkoutData?.discountAmount || 0) - backendConcessionsTotal;
+
+  // Nếu chưa có summary từ backend, tự tính tạm để giao diện không bị giật (nhảy số)
+  const comboTotal = summary?.concessionTotal ?? concessionProducts.reduce((sum, product) => {
+    return sum + product.price * (selectedCombos[product.id] || 0);
+  }, 0);
+  const ticketPrice = summary?.ticketTotal ?? initialTicketPrice;
+  const pointsDiscountAmount = summary?.pointsDiscountAmount ?? 0;
+  const comboRedeemAmount = summary?.comboRedeemAmount ?? 0;
+  const actualPointsUsed = summary?.pointsUsed ?? 0;
+
+  const base = ticketPrice + comboTotal - (checkoutData?.discountAmount || 0);
+  const fallbackGrandTotal = Math.max(0, base - pointsDiscountAmount - comboRedeemAmount);
+
+  const grandTotal = summary?.totalAmount ?? fallbackGrandTotal;
+  const estimatedPointsEarned = summary?.estimatedPointsEarned ?? Math.floor(grandTotal * 0.10);
+
+  const subTotal = ticketPrice + comboTotal - (checkoutData?.discountAmount || 0);
 
   /** Combo được đổi bằng điểm (nếu có chọn redeemConcessionId) */
   const redeemConcessionProduct = useMemo(() => {
     if (!redeemConcessionId) return null;
     return concessionProducts.find(p => p.id === redeemConcessionId) || null;
   }, [redeemConcessionId, concessionProducts]);
-
-  /** Số điểm cần để đổi combo đã chọn */
-  const pointsRequiredForCombo = useMemo(() => {
-    return redeemConcessionProduct ? redeemConcessionProduct.price : 0;
-  }, [redeemConcessionProduct]);
-
-  /** Tổng phụ (ticket + combo thường được chọn) trước khi áp điểm */
-  const subTotal = useMemo(() => {
-    return ticketPrice + comboTotal - (checkoutData?.discountAmount || 0);
-  }, [ticketPrice, comboTotal, checkoutData]);
-
-  /** Số tiền được giảm khi dùng điểm giảm giá trực tiếp */
-  const pointsDiscountAmount = useMemo(() => {
-    if (!pointsToUse || pointsToUse <= 0) return 0;
-    const maxDiscount = Math.floor(subTotal * MAX_DISCOUNT_RATE);
-    const requested = Math.floor(pointsToUse * POINT_VALUE);
-    return Math.min(requested, maxDiscount);
-  }, [pointsToUse, subTotal]);
-
-  /** Số tiền combo được đổi bằng điểm (trả free) */
-  const comboRedeemAmount = useMemo(() => {
-    return redeemConcessionProduct ? redeemConcessionProduct.price : 0;
-  }, [redeemConcessionProduct]);
-
-  /** Grand total cuối cùng sau tất cả giảm giá */
-  const grandTotal = useMemo(() => {
-    if (!checkoutData) return 0;
-    const base = ticketPrice + comboTotal - (checkoutData.discountAmount || 0);
-    return Math.max(0, base - pointsDiscountAmount - comboRedeemAmount);
-  }, [ticketPrice, comboTotal, checkoutData, pointsDiscountAmount, comboRedeemAmount]);
-
-  /** Số điểm sẽ thực sự được sử dụng */
-  const actualPointsUsed = useMemo(() => {
-    if (redeemConcessionId) return pointsRequiredForCombo;
-    if (pointsToUse > 0) {
-      const maxDiscount = Math.floor(subTotal * MAX_DISCOUNT_RATE);
-      const requested = Math.floor(pointsToUse * POINT_VALUE);
-      return Math.min(requested, maxDiscount, loyaltyInfo?.loyaltyPoints || 0);
-    }
-    return 0;
-  }, [redeemConcessionId, pointsRequiredForCombo, pointsToUse, subTotal, loyaltyInfo]);
-
-  /** Điểm sẽ được tích sau khi đơn thanh toán thành công */
-  const estimatedPointsEarned = useMemo(() => {
-    return Math.floor(grandTotal * 0.10);
-  }, [grandTotal]);
 
   const handlePointsInputChange = useCallback((val) => {
     setPointsInputValue(val);
@@ -241,26 +239,22 @@ function useCheckoutPage() {
     setError('');
 
     try {
-      // 1. Cập nhật concessions vào booking trước khi lấy URL thanh toán
+      // 1. Cập nhật concessions và điểm vào booking trước khi lấy URL thanh toán
       const concessionsToUpdate = Object.entries(selectedCombos).map(([productId, quantity]) => ({
         productId: Number(productId),
         quantity
       }));
       await axiosInstance.put(`/bookings/${bookingId}/concessions`, {
-        concessions: concessionsToUpdate
+        concessions: concessionsToUpdate,
+        pointsToUse: redeemConcessionId ? 0 : actualPointsUsed,
+        redeemConcessionId: redeemConcessionId || undefined
       });
 
-      // 2. Tạo link thanh toán (với thông tin điểm nếu có)
+      // 2. Tạo link thanh toán
       const paymentPayload = {
         bookingId: Number(bookingId),
         method: selectedMethod,
       };
-
-      if (redeemConcessionId) {
-        paymentPayload.redeemConcessionId = redeemConcessionId;
-      } else if (pointsToUse > 0) {
-        paymentPayload.pointsToUse = actualPointsUsed;
-      }
 
       const response = await createPaymentUrl(paymentPayload);
 

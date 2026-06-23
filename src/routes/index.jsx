@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "@/pages/auth/login";
 import RegisterPage from "@/pages/auth/register";
 import ForgotPasswordPage from "@/pages/auth/forgot-password";
@@ -9,6 +9,9 @@ import userRoutes from "@/routes/userRoutes";
 import adminRoutes from "@/routes/adminRoutes";
 import { USER_ROLES } from "@/utils/constants";
 import CheckInPage from "@/features/staff/check-in";
+import StaffTicketSalePage from "@/features/staff/ticket-sale/StaffTicketSalePage";
+import StaffSeatSelectionPage from "@/features/staff/ticket-sale/StaffSeatSelectionPage";
+import StaffCheckoutPage from "@/features/staff/ticket-sale/StaffCheckoutPage";
 
 function AppRoutes() {
   return (
@@ -34,6 +37,30 @@ function AppRoutes() {
             element={
               <ProtectedRoute roles={[USER_ROLES.ADMIN, USER_ROLES.STAFF]}>
                 <CheckInPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/staff/ticket-sale"
+            element={
+              <ProtectedRoute roles={[USER_ROLES.ADMIN, USER_ROLES.STAFF]}>
+                <StaffTicketSalePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/staff/ticket-sale/:showtimeId/seats"
+            element={
+              <ProtectedRoute roles={[USER_ROLES.ADMIN, USER_ROLES.STAFF]}>
+                <StaffSeatSelectionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/staff/ticket-sale/:bookingId/checkout"
+            element={
+              <ProtectedRoute roles={[USER_ROLES.ADMIN, USER_ROLES.STAFF]}>
+                <StaffCheckoutPage />
               </ProtectedRoute>
             }
           />

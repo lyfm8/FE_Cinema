@@ -53,9 +53,14 @@ function Header() {
                 {tx('Movies', 'Phim')}
               </NavLink>
               {canCheckIn ? (
-                <NavLink to="/staff/check-in" className={navClassName}>
-                  {tx('Ticket Check-in', 'Soát vé')}
-                </NavLink>
+                <>
+                  <NavLink to="/staff/ticket-sale" className={navClassName}>
+                    {tx('Ticket Sale', 'Bán vé')}
+                  </NavLink>
+                  <NavLink to="/staff/check-in" className={navClassName}>
+                    {tx('Ticket Check-in', 'Soát vé')}
+                  </NavLink>
+                </>
               ) : null}
             </nav>
           </div>
@@ -100,13 +105,22 @@ function Header() {
                       </Link>
                     )}
                     {canCheckIn && (
-                      <Link
-                        to="/staff/check-in"
-                        onClick={() => setShowDropdown(false)}
-                        className="block px-4 py-2 text-sm text-ink hover:bg-gray-50 hover:text-galaxyBlue transition-colors"
-                      >
-                        {tx('Ticket Check-in', 'Soát vé')}
-                      </Link>
+                      <>
+                        <Link
+                          to="/staff/ticket-sale"
+                          onClick={() => setShowDropdown(false)}
+                          className="block px-4 py-2 text-sm text-ink hover:bg-gray-50 hover:text-galaxyBlue transition-colors"
+                        >
+                          {tx('Ticket Sale', 'Bán vé')}
+                        </Link>
+                        <Link
+                          to="/staff/check-in"
+                          onClick={() => setShowDropdown(false)}
+                          className="block px-4 py-2 text-sm text-ink hover:bg-gray-50 hover:text-galaxyBlue transition-colors"
+                        >
+                          {tx('Ticket Check-in', 'Soát vé')}
+                        </Link>
+                      </>
                     )}
                     <Link 
                       to="/booking-history" 

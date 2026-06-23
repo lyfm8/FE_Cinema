@@ -5,12 +5,7 @@ import { publicMovieService } from "@/features/movies/services/movieService";
 import { holdSeats, createBooking, getBookedSeatsForShowtime, getConcessions } from "@/features/booking/services/bookingService";
 import { io } from "socket.io-client";
 
-const ROOM_PRICES = {
-  standard: 75000,
-  vip: 120000,
-  imax: 150000,
-  couple: 200000,
-};
+// ROOM_PRICES are now fetched from backend
 
 function normalizeRoomType(value) {
   const normalized = String(value ?? "").toLowerCase();
@@ -108,6 +103,7 @@ function normalizeShowtimeDetail(rawShowtime) {
     roomName: rawShowtime?.room?.name || rawShowtime?.roomName || "",
     format: rawShowtime?.format || "",
     seats,
+    pricePerSeat: rawShowtime?.pricePerSeat,
   };
 }
 
@@ -137,8 +133,7 @@ function useInlineSeatBooking() {
     [selectedSeatObjects],
   );
 
-  const pricePerSeat =
-    ROOM_PRICES[showtimeDetail?.roomType] ?? ROOM_PRICES.standard;
+  const pricePerSeat = showtimeDetail?.pricePerSeat ?? 75000;
 
   const totalPrice = useMemo(
     () => selectedSeatObjects.length * pricePerSeat,
