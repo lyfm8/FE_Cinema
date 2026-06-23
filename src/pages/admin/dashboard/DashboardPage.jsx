@@ -1,12 +1,20 @@
 import StatCard from '@/pages/admin/dashboard/components/StatCard';
 import RevenueChart from '@/pages/admin/dashboard/components/RevenueChart';
 import RecentBookings from '@/pages/admin/dashboard/components/RecentBookings';
+import DataTable from '@/components/shared/DataTable';
 import useLanguage from '@/features/i18n/hooks/useLanguage';
 import useDashboard from '@/features/admin/dashboard/hooks/useDashboard';
 
 function DashboardPage() {
   const { tx } = useLanguage();
-  const { statCards, monthlyRevenue, recentBookingColumns, recentBookingRows } = useDashboard(tx);
+  const { 
+    statCards, 
+    monthlyRevenue, 
+    recentBookingColumns, 
+    recentBookingRows,
+    movieColumns,
+    movieRows 
+  } = useDashboard(tx);
 
   return (
     <div className="space-y-6">
@@ -27,6 +35,13 @@ function DashboardPage() {
           columns={recentBookingColumns}
           rows={recentBookingRows}
         />
+      </section>
+
+      <section className="surface-card p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="section-label">{tx('Movie Performance', 'Hiệu suất phim')}</p>
+        </div>
+        <DataTable columns={movieColumns} rows={movieRows} />
       </section>
     </div>
   );
